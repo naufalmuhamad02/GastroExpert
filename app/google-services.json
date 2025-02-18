@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "468367573047",
+    "project_id": "gastroexpert-d1966",
+    "storage_bucket": "gastroexpert-d1966.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468367573047:android:f71438b782cd1f98e13fb2",
+        "android_client_info": {
+          "package_name": "com.example.gastroexpert"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY6UMwwzBqQtUuRMQ9C_RPlXOy3emCDyc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
