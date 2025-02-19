@@ -2,6 +2,7 @@ package com.example.gastroexpert.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -40,16 +42,17 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // Enable Edge-to-Edge mode for immersive UI
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            EdgeToEdge.enable(this);
+        }
         setContentView(R.layout.activity_sign_up);
 
         // Check login status
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
         if (isLoggedIn) {
-            // If already logged in, redirect to MainActivity
             Intent mainIntent = new Intent(SignUpActivity.this, MainActivity.class);
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(mainIntent);
             finish();
         }
@@ -85,10 +88,10 @@ public class SignUpActivity extends AppCompatActivity {
             int selection = etPassword.getSelectionEnd();
             if (etPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
                 etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                showPassBtn.setImageResource(R.drawable.eye_slash); // Change icon to eye-slash when showing password
+                showPassBtn.setImageResource(R.drawable.eye_slash);
             } else {
                 etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                showPassBtn.setImageResource(R.drawable.eye_pass); // Change icon to eye-pass when hiding password
+                showPassBtn.setImageResource(R.drawable.eye_pass);
             }
             etPassword.setSelection(selection);
         });
@@ -98,10 +101,10 @@ public class SignUpActivity extends AppCompatActivity {
             int selection = etConfirmPassword.getSelectionEnd();
             if (etConfirmPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
                 etConfirmPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                showConfirmPassBtn.setImageResource(R.drawable.eye_slash); // Change icon to eye-slash when showing password
+                showConfirmPassBtn.setImageResource(R.drawable.eye_slash);
             } else {
                 etConfirmPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                showConfirmPassBtn.setImageResource(R.drawable.eye_pass); // Change icon to eye-pass when hiding password
+                showConfirmPassBtn.setImageResource(R.drawable.eye_pass);
             }
             etConfirmPassword.setSelection(selection);
         });
@@ -116,9 +119,6 @@ public class SignUpActivity extends AppCompatActivity {
                 String username = etUsername.getText().toString().trim();
                 if (username.isEmpty()) {
                     etUsername.setError("Masukkan username");
-                    isUsernameValid = false;
-                } else if (username.length() <= 5) {
-                    etUsername.setError("Username harus lebih dari 5 karakter");
                     isUsernameValid = false;
                 } else if (username.length() >= 20) {
                     etUsername.setError("Username harus kurang dari 20 karakter");
@@ -171,9 +171,6 @@ public class SignUpActivity extends AppCompatActivity {
 
                 if (password.isEmpty()) {
                     etPassword.setError("Masukkan password");
-                    isPasswordValid = false;
-                } else if (password.length() <= 5) {
-                    etPassword.setError("Password harus lebih dari 5 karakter");
                     isPasswordValid = false;
                 } else if (password.length() >= 20) {
                     etPassword.setError("Password harus kurang dari 20 karakter");
@@ -242,13 +239,13 @@ public class SignUpActivity extends AppCompatActivity {
                             String existingUsername = userSnapshot.child("username").getValue(String.class);
                             String existingEmail = userSnapshot.child("email").getValue(String.class);
 
-                            if (existingUsername != null && existingUsername.equals(username)) {
+                            if (existingUsername != null && existingUsername.equalsIgnoreCase(username)) {
                                 etUsername.setError("Username sudah digunakan");
                                 usernameExists = true;
                                 break;
                             }
 
-                            if (existingEmail != null && existingEmail.equals(email)) {
+                            if (existingEmail != null && existingEmail.equalsIgnoreCase(email)) {
                                 etEmail.setError("Email sudah digunakan");
                                 emailExists = true;
                                 break;
@@ -258,36 +255,47 @@ public class SignUpActivity extends AppCompatActivity {
                         if (!usernameExists && !emailExists) {
                             // Hash password
                             String hashedPassword = hashPassword(password);
+                            if (hashedPassword == null) {
+                                Toast.makeText(SignUpActivity.this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
 
                             // Save new user data to the database
-                            database.child(username).child("username").setValue(username)
-                                    .addOnSuccessListener(aVoid -> database.child(username).child("email").setValue(email)
-                                            .addOnSuccessListener(aVoid1 -> database.child(username).child("password").setValue(hashedPassword)
-                                                    .addOnSuccessListener(aVoid2 -> {
-                                                        Toast.makeText(SignUpActivity.this, "Berhasil membuat akun", Toast.LENGTH_SHORT).show();
-                                                        Intent loginIntent = new Intent(SignUpActivity.this, SignInActivity.class);
-                                                        startActivity(loginIntent);
-                                                        finish();
-                                                    })
-                                                    .addOnFailureListener(e -> {
-                                                        Toast.makeText(SignUpActivity.this, "Gagal menyimpan password", Toast.LENGTH_SHORT).show();
-                                                        Log.e("SignUpActivity", "Database error: " + e.getMessage());
-                                                    }))
-                                            .addOnFailureListener(e -> {
-                                                Toast.makeText(SignUpActivity.this, "Gagal menyimpan email", Toast.LENGTH_SHORT).show();
-                                                Log.e("SignUpActivity", "Database error: " + e.getMessage());
-                                            }))
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(SignUpActivity.this, "Gagal menyimpan username", Toast.LENGTH_SHORT).show();
-                                        Log.e("SignUpActivity", "Database error: " + e.getMessage());
-                                    });
+                            String userId = database.push().getKey();
+                            if (userId != null) {
+                                database.child(userId).child("username").setValue(username)
+                                        .addOnSuccessListener(aVoid -> database.child(userId).child("email").setValue(email)
+                                                .addOnSuccessListener(aVoid1 -> database.child(userId).child("password").setValue(hashedPassword)
+                                                        .addOnSuccessListener(aVoid2 -> {
+                                                            Toast.makeText(SignUpActivity.this, "Berhasil membuat akun", Toast.LENGTH_SHORT).show();
+                                                            Intent loginIntent = new Intent(SignUpActivity.this, SignInActivity.class);
+                                                            startActivity(loginIntent);
+                                                            finish();
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Toast.makeText(SignUpActivity.this, "Gagal menyimpan password", Toast.LENGTH_SHORT).show();
+                                                            Log.e("SignUpActivity", "Database error: " + e.getMessage());
+                                                        }))
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(SignUpActivity.this, "Gagal menyimpan email", Toast.LENGTH_SHORT).show();
+                                                    Log.e("SignUpActivity", "Database error: " + e.getMessage());
+                                                }))
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(SignUpActivity.this, "Gagal menyimpan username", Toast.LENGTH_SHORT).show();
+                                            Log.e("SignUpActivity", "Database error: " + e.getMessage());
+                                        });
+                            }
                         }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(SignUpActivity.this, "Terjadi kesalahan saat memeriksa database", Toast.LENGTH_SHORT).show();
                         Log.e("SignUpActivity", "Database error: " + error.getMessage());
+                        new AlertDialog.Builder(SignUpActivity.this)
+                                .setTitle("Error")
+                                .setMessage("Terjadi kesalahan saat memeriksa database. Silakan coba lagi nanti.")
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
                 });
             }
@@ -306,6 +314,7 @@ public class SignUpActivity extends AppCompatActivity {
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e("SignUpActivity", "Hashing error: " + e.getMessage());
+            Toast.makeText(this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
             return null;
         }
     }

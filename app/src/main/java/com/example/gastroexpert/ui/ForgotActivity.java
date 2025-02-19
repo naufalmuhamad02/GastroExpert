@@ -2,6 +2,7 @@ package com.example.gastroexpert.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -39,33 +41,36 @@ public class ForgotActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // Enable Edge-to-Edge display for immersive UI
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            EdgeToEdge.enable(this);
+        }
         setContentView(R.layout.activity_forgot);
+
+        // Check login status
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+        if (isLoggedIn) {
+            Intent mainIntent = new Intent(ForgotActivity.this, MainActivity.class);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(mainIntent);
+            finish();
+        }
+
+        // Set padding based on system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // Check login status
-        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-        if (isLoggedIn) {
-            // If already logged in, redirect to MainActivity
-            Intent mainIntent = new Intent(ForgotActivity.this, MainActivity.class);
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(mainIntent);
-            finish();
-        }
-
         // Initialize UI components
-        show_pass_btn = findViewById(R.id.show_pass_btn);
-        show_confpass_btn = findViewById(R.id.show_confpass_btn);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
-        Button btnGanti = findViewById(R.id.btnGanti);
         confPassword = findViewById(R.id.etPasswords);
+        Button btnGanti = findViewById(R.id.btnGanti);
         TextView ingatakun = findViewById(R.id.ingat);
+        show_pass_btn = findViewById(R.id.show_pass_btn);
+        show_confpass_btn = findViewById(R.id.show_confpass_btn);
 
         // Listener for navigating to the login page
         ingatakun.setOnClickListener(view -> {
@@ -78,10 +83,10 @@ public class ForgotActivity extends AppCompatActivity {
             int selection = etPassword.getSelectionEnd();
             if (etPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
                 etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                show_pass_btn.setImageResource(R.drawable.eye_slash); // Change icon to eye-slash when showing password
+                show_pass_btn.setImageResource(R.drawable.eye_slash);
             } else {
                 etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                show_pass_btn.setImageResource(R.drawable.eye_pass); // Change icon to eye-pass when hiding password
+                show_pass_btn.setImageResource(R.drawable.eye_pass);
             }
             etPassword.setSelection(selection);
         });
@@ -91,10 +96,10 @@ public class ForgotActivity extends AppCompatActivity {
             int selection = confPassword.getSelectionEnd();
             if (confPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
                 confPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                show_confpass_btn.setImageResource(R.drawable.eye_slash); // Change icon to eye-slash when showing password
+                show_confpass_btn.setImageResource(R.drawable.eye_slash);
             } else {
                 confPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                show_confpass_btn.setImageResource(R.drawable.eye_pass); // Change icon to eye-pass when hiding password
+                show_confpass_btn.setImageResource(R.drawable.eye_pass);
             }
             confPassword.setSelection(selection);
         });
@@ -116,7 +121,6 @@ public class ForgotActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Check if the username exists in the database
                 database = FirebaseDatabase.getInstance().getReference("users");
                 database.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -124,8 +128,7 @@ public class ForgotActivity extends AppCompatActivity {
                         boolean userFound = false;
                         for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                             String existingUsername = userSnapshot.child("username").getValue(String.class);
-                            Log.d("ForgotActivity", "Username from Firebase: " + existingUsername);
-                            if (existingUsername != null && existingUsername.equals(username)) {
+                            if (existingUsername != null && existingUsername.equalsIgnoreCase(username)) {
                                 etUsername.setError(null);
                                 mail = true;
                                 userFound = true;
@@ -140,7 +143,12 @@ public class ForgotActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(ForgotActivity.this, "Gagal memeriksa akun: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("ForgotActivity", "Database error: " + error.getMessage());
+                        new AlertDialog.Builder(ForgotActivity.this)
+                                .setTitle("Error")
+                                .setMessage("Terjadi kesalahan saat memeriksa database. Silakan coba lagi nanti.")
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
                 });
             }
@@ -162,8 +170,6 @@ public class ForgotActivity extends AppCompatActivity {
 
                 if (password.isEmpty()) {
                     etPassword.setError("Masukkan password");
-                } else if (password.length() <= 5) {
-                    etPassword.setError("Password harus lebih dari 5 karakter");
                 } else if (password.length() >= 20) {
                     etPassword.setError("Password harus kurang dari 20 karakter");
                 } else if (!password.matches(passwordRegex)) {
@@ -205,26 +211,27 @@ public class ForgotActivity extends AppCompatActivity {
             final String password = etPassword.getText().toString().trim();
             final String cpassword = confPassword.getText().toString().trim();
 
-            // Validate empty inputs
             if (TextUtils.isEmpty(username)) {
-                etUsername.setError("Masukan Username");
+                etUsername.setError("Masukkan username");
                 return;
             }
+
             if (TextUtils.isEmpty(password)) {
-                etPassword.setError("Masukan password");
+                etPassword.setError("Masukkan password");
                 return;
             }
+
             if (TextUtils.isEmpty(cpassword)) {
-                confPassword.setError("Masukan konfirmasi password");
+                confPassword.setError("Masukkan konfirmasi password");
                 return;
             }
+
             if (!cpass) {
                 confPassword.setError("Password tidak sama");
                 return;
             }
 
             if (mail) {
-                // Update the password in the database
                 database = FirebaseDatabase.getInstance().getReference("users");
                 database.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -232,15 +239,19 @@ public class ForgotActivity extends AppCompatActivity {
                         boolean usernameFound = false;
                         for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                             String usernames = userSnapshot.child("username").getValue(String.class);
-                            Log.d("ForgotActivity", "Username from Firebase: " + usernames);
-                            if (usernames != null && usernames.equals(username)) {
+                            if (usernames != null && usernames.equalsIgnoreCase(username)) {
                                 String hashedPassword = hashPassword(password);
+                                if (hashedPassword == null) {
+                                    Toast.makeText(ForgotActivity.this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
                                 userSnapshot.child("password").getRef().setValue(hashedPassword)
                                         .addOnSuccessListener(aVoid -> {
                                             Toast.makeText(ForgotActivity.this, "Berhasil mengganti password", Toast.LENGTH_SHORT).show();
                                             Intent loginIntent = new Intent(ForgotActivity.this, SignInActivity.class);
                                             startActivity(loginIntent);
-                                            finish(); // Close ForgotActivity after starting SignInActivity
+                                            finish();
                                         })
                                         .addOnFailureListener(e -> Toast.makeText(ForgotActivity.this, "Gagal mengganti password: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                                 usernameFound = true;
@@ -254,7 +265,12 @@ public class ForgotActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(ForgotActivity.this, "Gagal mengganti password: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("ForgotActivity", "Database error: " + error.getMessage());
+                        new AlertDialog.Builder(ForgotActivity.this)
+                                .setTitle("Error")
+                                .setMessage("Terjadi kesalahan saat memeriksa database. Silakan coba lagi nanti.")
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
                 });
             }
@@ -272,7 +288,8 @@ public class ForgotActivity extends AppCompatActivity {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            Log.e("ForgotActivity", "Error hashing password", e);
+            Log.e("ForgotActivity", "Hashing error: " + e.getMessage());
+            Toast.makeText(this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
             return null;
         }
     }

@@ -2,6 +2,7 @@ package com.example.gastroexpert.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,7 +29,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SignInActivity extends AppCompatActivity {
-
     private EditText etUsername, etPassword;
     private ImageView showPassBtn;
     private DatabaseReference database;
@@ -35,16 +36,17 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            EdgeToEdge.enable(this);
+        }
         setContentView(R.layout.activity_signin);
 
         // Check login status
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
         if (isLoggedIn) {
-            // If already logged in, redirect to MainActivity
             Intent mainIntent = new Intent(SignInActivity.this, MainActivity.class);
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(mainIntent);
             finish();
         }
@@ -88,45 +90,63 @@ public class SignInActivity extends AppCompatActivity {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
+            // Validasi input
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Username or Password is empty", Toast.LENGTH_SHORT).show();
+            } else if (password.length() < 6) {
+                Toast.makeText(getApplicationContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             } else {
+                // Hash the password
                 String hashedPassword = hashPassword(password);
 
+                // Check if hashing failed
+                if (hashedPassword.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Error hashing password. Please try again.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Access Firebase database
                 database = FirebaseDatabase.getInstance().getReference("users");
                 database.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         boolean match = false;
 
-                        // Check if the username and password match any entry in the database
+                        // Iterate through users in the database
                         for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                             String dbUsername = userSnapshot.child("username").getValue(String.class);
                             String dbPassword = userSnapshot.child("password").getValue(String.class);
 
+                            Log.d("SignInActivity", "Checking user: " + userSnapshot.getKey());
                             Log.d("SignInActivity", "Retrieved username: " + dbUsername);
                             Log.d("SignInActivity", "Retrieved password: " + dbPassword);
-                            Log.d("SignInActivity", "Input username: " + username);
-                            Log.d("SignInActivity", "Input password: " + hashedPassword);
 
-                            if (dbUsername != null && dbPassword != null && dbUsername.equalsIgnoreCase(username) && dbPassword.equals(hashedPassword)) {
+                            // Compare username and password
+                            if (dbUsername != null && dbPassword != null &&
+                                    dbUsername.equalsIgnoreCase(username) && dbPassword.equals(hashedPassword)) {
                                 match = true;
                                 break;
                             }
                         }
 
+                        // Handle login result
                         if (match) {
-                            // Save login status and username in SharedPreferences
-                            SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
-                            editor.putBoolean("isLoggedIn", true);
-                            editor.putString("username", username);
-                            editor.apply();
+                            try {
+                                SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
+                                editor.putBoolean("isLoggedIn", true);
+                                editor.putString("username", username);
+                                editor.apply();
 
-                            Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-                            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(mainIntent);
-                            finish();
+                                Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+
+                                Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(mainIntent);
+                                finish();
+                            } catch (Exception e) {
+                                Log.e("SignInActivity", "Error saving login status", e);
+                                Toast.makeText(getApplicationContext(), "Error saving login status. Please try again.", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             Toast.makeText(getApplicationContext(), "Invalid Username or Password", Toast.LENGTH_SHORT).show();
                         }
@@ -134,8 +154,12 @@ public class SignInActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getApplicationContext(), "Error checking the database", Toast.LENGTH_SHORT).show();
                         Log.e("SignInActivity", "Database error: " + error.getMessage());
+                        new AlertDialog.Builder(SignInActivity.this)
+                                .setTitle("Error")
+                                .setMessage("An error occurred while accessing the database. Please try again later.")
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
                 });
             }
@@ -160,7 +184,8 @@ public class SignInActivity extends AppCompatActivity {
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e("SignInActivity", "Error hashing password", e);
-            return null;
+            Toast.makeText(this, "Error hashing password. Please try again.", Toast.LENGTH_SHORT).show();
+            return ""; // Return empty string instead of null
         }
     }
 }
