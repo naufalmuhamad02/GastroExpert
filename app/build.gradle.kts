@@ -69,4 +69,8 @@ dependencies {
     // 7. Annotations
     implementation(libs.annotation)
 
+    //8. Bcrypt
+    implementation(libs.jbcrypt)
+
+
 }

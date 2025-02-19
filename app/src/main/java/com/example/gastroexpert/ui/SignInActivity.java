@@ -90,7 +90,7 @@ public class SignInActivity extends AppCompatActivity {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            // Validasi input
+            // Validation input
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Username or Password is empty", Toast.LENGTH_SHORT).show();
             } else if (password.length() < 6) {
