@@ -5,7 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_auth">
+    android:fitsSystemWindows="true"
+    android:id="@+id/main"
+    android:background="@drawable/bg_auth"
+    tools:context=".ui.SplashActivity">
 
     <!-- Logo Aplikasi -->
     <ImageView

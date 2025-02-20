@@ -13,5 +13,12 @@
         <item name="android:statusBarColor">@android:color/transparent</item> <!-- Opsional: Transparan status bar -->
     </style>
 
+    <style name="Theme.App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Default Theme-->
     <style name="Theme.GastroExpert" parent="Base.Theme.GastroExpert" />
 </resources>

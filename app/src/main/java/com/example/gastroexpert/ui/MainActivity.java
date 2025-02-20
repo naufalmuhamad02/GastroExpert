@@ -18,6 +18,10 @@ import com.example.gastroexpert.R;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = "MainActivity";
+    private static final String PREFS_NAME = "MyPrefs";
+
     private DrawerLayout drawerLayout;
     private String username;
 
@@ -40,10 +44,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Set up the NavigationView and set the item selection listener
         NavigationView navigationView = findViewById(R.id.nav_view);
+        if (navigationView == null) {
+            Log.e(TAG, "NavigationView not found in layout");
+            return;
+        }
         navigationView.setNavigationItemSelectedListener(this);
 
         // Set up the ActionBarDrawerToggle to handle the hamburger icon and drawer opening/closing
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -56,56 +65,82 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Check if the app should navigate to a specific fragment based on the intent
         String navigateTo = getIntent().getStringExtra("navigateTo");
         if ("diagnosis".equals(navigateTo)) {
-            DiagnosisFragment fragment = new DiagnosisFragment();
+            navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
+        } else {
+            navigateToFragment(new HomeFragment(), null, R.id.nav_beranda);
+        }
+    }
+
+    /**
+     * Navigate to a specific fragment.
+     *
+     * @param fragment The fragment to navigate to.
+     * @param username The username to pass to the fragment (if applicable).
+     * @param menuItemId The menu item ID to mark as checked.
+     */
+    private void navigateToFragment(androidx.fragment.app.Fragment fragment, String username, int menuItemId) {
+        if (username != null) {
             Bundle args = new Bundle();
             args.putString("username", username);
             fragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
-            navigationView.setCheckedItem(R.id.nav_diagnosis);
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+
+        // Set the selected menu item
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            navigationView.getMenu().findItem(menuItemId).setChecked(true);
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).addToBackStack(null).commit();
-            navigationView.setCheckedItem(R.id.nav_beranda);
+            Log.e(TAG, "NavigationView is null");
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         try {
-            if (item.getItemId() == R.id.nav_beranda) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).addToBackStack(null).commit();
-                Log.d("MainActivity", "Navigated to HomeFragment");
-            } else if (item.getItemId() == R.id.nav_penyakit) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new DiseaseFragment()).addToBackStack(null).commit();
-                Log.d("MainActivity", "Navigated to DiseaseFragment");
-            } else if (item.getItemId() == R.id.nav_tentang) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AboutFragment()).addToBackStack(null).commit();
-                Log.d("MainActivity", "Navigated to AboutFragment");
-            } else if (item.getItemId() == R.id.nav_riwayat) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HistoryFragment()).addToBackStack(null).commit();
-                Log.d("MainActivity", "Navigated to HistoryFragment");
-            } else if (item.getItemId() == R.id.nav_diagnosis) {
-                DiagnosisFragment fragment = new DiagnosisFragment();
-                Bundle args = new Bundle();
-                args.putString("username", username);
-                fragment.setArguments(args);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
-                Log.d("MainActivity", "Navigated to DiagnosisFragment");
-            } else if (item.getItemId() == R.id.nav_logout) {
-                SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
-                editor.clear();
-                editor.apply();
-                Intent logout = new Intent(MainActivity.this, SignInActivity.class);
-                logout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(logout);
-                finish();
-                Log.d("MainActivity", "Logged out");
+            int id = item.getItemId();
+
+            if (id == R.id.nav_beranda) {
+                navigateToFragment(new HomeFragment(), null, R.id.nav_beranda);
+                Log.d(TAG, "Navigated to HomeFragment");
+            } else if (id == R.id.nav_penyakit) {
+                navigateToFragment(new DiseaseFragment(), null, R.id.nav_penyakit);
+                Log.d(TAG, "Navigated to DiseaseFragment");
+            } else if (id == R.id.nav_tentang) {
+                navigateToFragment(new AboutFragment(), null, R.id.nav_tentang);
+                Log.d(TAG, "Navigated to AboutFragment");
+            } else if (id == R.id.nav_riwayat) {
+                navigateToFragment(new HistoryFragment(), null, R.id.nav_riwayat);
+                Log.d(TAG, "Navigated to HistoryFragment");
+            } else if (id == R.id.nav_diagnosis) {
+                navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
+                Log.d(TAG, "Navigated to DiagnosisFragment");
+            } else if (id == R.id.nav_logout) {
+                logout();
+                Log.d(TAG, "Logged out");
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Error handling navigation item selection", e);
+            Log.e(TAG, "Error handling navigation item selection", e);
         }
-
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    /**
+     * Handle logout functionality.
+     */
+    private void logout() {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+        editor.clear();
+        editor.apply();
+        Intent logoutIntent = new Intent(MainActivity.this, SignInActivity.class);
+        logoutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(logoutIntent);
+        finish();
     }
 
     @Override
@@ -127,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onStart() {
         super.onStart();
         try {
-            SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
             if (!isLoggedIn) {
                 Intent loginIntent = new Intent(MainActivity.this, SignInActivity.class);
@@ -136,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 finish();
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Error checking login status", e);
+            Log.e(TAG, "Error checking login status", e);
         }
     }
 }

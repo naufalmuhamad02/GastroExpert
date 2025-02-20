@@ -10,25 +10,22 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gastroexpert.R;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
-
     private static final String TAG = "SplashActivity";
     private static final long SPLASH_DELAY = 3000; // Durasi splash screen dalam milidetik (3 detik)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
 
         // Aktifkan mode fullscreen
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        );
+        enableFullScreenMode();
 
         // Hapus Action Bar
         if (getSupportActionBar() != null) {
@@ -49,21 +46,45 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         // Load animasi fade-in
-        Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-        logo.startAnimation(fadeIn);
+        loadFadeInAnimation(logo);
 
         // Handler untuk delay sebelum pindah ke SignInActivity
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            // Pindah ke SignInActivity
-            Intent signInIntent = new Intent(SplashActivity.this, SignInActivity.class);
-            startActivity(signInIntent);
+        new Handler(Looper.getMainLooper()).postDelayed(this::transitionToSignInActivity, SPLASH_DELAY);
+    }
 
-            // Tutup SplashActivity agar tidak bisa kembali ke layar ini
-            finish();
+    /**
+     * Mengaktifkan mode fullscreen untuk aktivitas ini.
+     */
+    private void enableFullScreenMode() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
+    }
 
-            // Logging untuk memastikan transisi berhasil
-            Log.d(TAG, "Transitioning to SignInActivity");
-        }, SPLASH_DELAY);
+    /**
+     * Memuat animasi fade-in untuk elemen logo.
+     *
+     * @param logo ImageView yang akan dianimasikan.
+     */
+    private void loadFadeInAnimation(ImageView logo) {
+        try {
+            Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+            logo.startAnimation(fadeIn);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading animation", e);
+        }
+    }
+
+    /**
+     * Melakukan transisi ke SignInActivity.
+     */
+    private void transitionToSignInActivity() {
+        Intent signInIntent = new Intent(SplashActivity.this, SignInActivity.class);
+        startActivity(signInIntent);
+        finish(); // Tutup SplashActivity agar tidak bisa kembali ke layar ini
+        Log.d(TAG, "Transitioning to SignInActivity");
     }
 
     @Override
