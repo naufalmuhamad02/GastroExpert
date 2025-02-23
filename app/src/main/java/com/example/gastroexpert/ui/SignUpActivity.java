@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -76,7 +75,9 @@ public class SignUpActivity extends AppCompatActivity {
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility(etPassword, showPassBtn));
 
         // Listener for showing/hiding confirm password
-        showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(etConfirmPassword, showConfirmPassBtn));
+        showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(
+                etConfirmPassword, showConfirmPassBtn
+        ));
 
         // Validate username
         etUsername.addTextChangedListener(new TextWatcher() {
