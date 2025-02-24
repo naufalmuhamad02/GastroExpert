@@ -51,7 +51,7 @@ public class SignInActivity extends AppCompatActivity {
 
         // Initialize UI components
         TextView btnRegister = findViewById(R.id.btnRegister);
-        Button btnLogin = findViewById(R.id.btnlogin);
+        Button btnLogin = findViewById(R.id.btnLogin);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         showPassBtn = findViewById(R.id.show_pass_btn);
