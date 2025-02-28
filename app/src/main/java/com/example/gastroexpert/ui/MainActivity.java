@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private static final String TAG = "MainActivity";
     private static final String PREFS_NAME = "MyPrefs";
-
     private DrawerLayout drawerLayout;
     private String username;
 
