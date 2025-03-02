@@ -22,45 +22,54 @@ import java.util.Objects;
 public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = "SplashActivity";
-    private static final long SPLASH_DELAY = 3000;
+    private static final long SPLASH_DELAY = 3000; // 3 seconds
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
 
-        // Enable fullscreen mode
-        enableFullScreenMode();
+        // Initialize EdgeToEdge (For fullscreen mode)
+        EdgeToEdge.enable(this);
 
-        // Hide ActionBar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
-
-        // Use ViewBinding instead of findViewById
-        com.example.gastroexpert.databinding.ActivitySplashBinding binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        // Initialize ViewBinding
+        ActivitySplashBinding binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Log.d(TAG, "SplashActivity started");
+        // Hide the action bar
+        hideActionBar();
 
-        // Load animation
+        // Enable full-screen mode for devices running Android 10 (API level 29) or higher
+        enableFullScreenMode();
+
+        // Load and start the fade-in animation for the logo
         loadFadeInAnimation(binding.logo);
 
-        // Delay before transitioning
+        // Post a delayed task to transition to SignInActivity after SPLASH_DELAY (3 seconds)
         handler.postDelayed(this::transitionToSignInActivity, SPLASH_DELAY);
     }
 
     /**
-     * Enables fullscreen mode using modern Android API.
+     * Hide the action bar for the splash screen.
+     */
+    private void hideActionBar() {
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+    }
+
+    /**
+     * Enable full-screen mode with compatibility for different Android versions.
      */
     private void enableFullScreenMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Android 11 and higher, use insets controller for hiding status and navigation bars
             getWindow().setDecorFitsSystemWindows(false);
-        }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            Objects.requireNonNull(getWindow().getInsetsController()).hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            Objects.requireNonNull(getWindow().getInsetsController()).hide(
+                    WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars()
+            );
         } else {
+            // For older versions, use system UI visibility flags
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
@@ -70,35 +79,36 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
-     * Loads fade-in animation for the logo.
+     * Load and apply a fade-in animation to the logo.
+     * @param logo The ImageView to apply the animation.
      */
     private void loadFadeInAnimation(ImageView logo) {
         try {
+            // Load the fade-in animation
             Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-            if (fadeIn != null) {
-                logo.startAnimation(fadeIn);
-            } else {
-                Log.e(TAG, "Failed to load fade-in animation");
-            }
+            logo.startAnimation(fadeIn);
         } catch (Exception e) {
-            Log.e(TAG, "Error loading animation", e);
+            Log.e(TAG, "Failed to load animation", e);
         }
     }
 
     /**
-     * Transitions to SignInActivity.
+     * Transition to the SignInActivity after a delay.
      */
     private void transitionToSignInActivity() {
+        // Start SignInActivity and finish this activity
         Intent intent = new Intent(SplashActivity.this, SignInActivity.class);
         startActivity(intent);
         finish();
-        Log.d(TAG, "Transitioning to SignInActivity");
+
+        // Apply a fade-in and fade-out transition between activities
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Remove any pending callbacks to prevent memory leaks
         handler.removeCallbacksAndMessages(null);
-        Log.d(TAG, "SplashActivity destroyed");
     }
 }

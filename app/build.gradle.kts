@@ -62,6 +62,7 @@ dependencies {
 
     // 5. Image Loading Library
     implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
 
     // 6. Google Play Services
     implementation(libs.play.services.auth)

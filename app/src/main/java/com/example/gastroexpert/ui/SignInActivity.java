@@ -3,6 +3,7 @@ package com.example.gastroexpert.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -36,86 +37,88 @@ public class SignInActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private ImageView showPassBtn;
     private ProgressBar progressBar;
+    private DatabaseReference database;
+    private Button btnLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signin);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_signin);  // Set content view first
 
-        // Check login status
+        // Initialize UI components after the layout is set
+        initializeUIComponents();
+
+        // Check if already logged in
         if (isLoggedIn()) {
             navigateToMainActivity();
             return;
         }
 
-        // Initialize UI components
-        TextView btnRegister = findViewById(R.id.btnRegister);
-        Button btnLogin = findViewById(R.id.btnLogin);
-        etUsername = findViewById(R.id.etUsername);
-        etPassword = findViewById(R.id.etPassword);
+        // Initialize Firebase Database reference
+        database = FirebaseDatabase.getInstance().getReference("users");
+
+        // Set up listeners for buttons
+        setupListeners();
+    }
+
+    private void initializeUIComponents() {
+        // Initialize all UI components
+        etUsername = findViewById(R.id.etUsername);  // Ensure this is after setContentView()
+        etPassword = findViewById(R.id.etPassword);  // Ensure this is after setContentView()
         showPassBtn = findViewById(R.id.show_pass_btn);
-        TextView forgotPassword = findViewById(R.id.forgotPassword);
         progressBar = findViewById(R.id.progressBar);
+        btnLogin = findViewById(R.id.btnLogin);
+    }
 
-        // Listener for navigating to the registration page
-        btnRegister.setOnClickListener(view -> navigateToSignUpActivity());
-
-        // Listener for showing/hiding the password
-        showPassBtn.setOnClickListener(view -> togglePasswordVisibility());
-
-        // Listener for the login button
+    private void setupListeners() {
+        // Set up listeners for buttons
         btnLogin.setOnClickListener(view -> handleLogin());
+        showPassBtn.setOnClickListener(view -> togglePasswordVisibility());
+        TextView forgotPassword = findViewById(R.id.forgotPassword);
+        TextView signUp = findViewById(R.id.btnRegister);
 
-        // Listener for navigating to the forgot password page
-        forgotPassword.setOnClickListener(v -> navigateToForgotPasswordActivity());
+        forgotPassword.setOnClickListener(view -> navigateToForgotPasswordActivity());
+        signUp.setOnClickListener(view -> navigateToSignUpActivity());
     }
 
     /**
-     * Check if the user is already logged in.
-     *
-     * @return true if logged in, false otherwise.
+     * Check if the user is already logged in using SharedPreferences.
      */
     private boolean isLoggedIn() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-        if (isLoggedIn) {
-            Log.d(TAG, "User is already logged in");
-        }
-        return isLoggedIn;
+        return prefs.getBoolean("isLoggedIn", false);
     }
 
     /**
-     * Navigate to the main activity.
+     * Navigate to MainActivity after successful login.
      */
     private void navigateToMainActivity() {
-        Intent mainIntent = new Intent(SignInActivity.this, MainActivity.class);
-        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(mainIntent);
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("username", etUsername.getText().toString().trim());  // Add username to the intent
+        startActivity(intent);
         finish();
     }
 
     /**
-     * Navigate to the sign-up activity.
-     */
-    private void navigateToSignUpActivity() {
-        Intent registerIntent = new Intent(this, SignUpActivity.class);
-        startActivity(registerIntent);
-    }
-
-    /**
-     * Navigate to the forgot password activity.
+     * Navigate to ForgotPasswordActivity.
      */
     private void navigateToForgotPasswordActivity() {
-        Intent forgotIntent = new Intent(this, ForgotActivity.class);
-        startActivity(forgotIntent);
+        startActivity(new Intent(this, ForgotActivity.class));
     }
 
     /**
-     * Toggle password visibility.
+     * Navigate to SignUpActivity.
+     */
+    private void navigateToSignUpActivity() {
+        startActivity(new Intent(this, SignUpActivity.class));
+    }
+
+    /**
+     * Toggle the password visibility in the EditText.
      */
     private void togglePasswordVisibility() {
-        int selection = etPassword.getSelectionEnd();
         if (etPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
             etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
             showPassBtn.setImageResource(R.drawable.eye_slash);
@@ -123,7 +126,6 @@ public class SignInActivity extends AppCompatActivity {
             etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
             showPassBtn.setImageResource(R.drawable.eye_pass);
         }
-        etPassword.setSelection(selection);
     }
 
     /**
@@ -133,91 +135,39 @@ public class SignInActivity extends AppCompatActivity {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (!validateInput(username, password)) {
-            return;
-        }
+        if (!validateInput(username, password)) return;
+
+        // Disable the login button and show progress
+        btnLogin.setEnabled(false);
+        progressBar.setVisibility(View.VISIBLE);
 
         String hashedPassword = hashPassword(password);
-        if (hashedPassword.isEmpty()) {
-            Toast.makeText(this, "Error hashing password. Please try again.", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-        progressBar.setVisibility(View.VISIBLE); // Show loading indicator
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference("users");
-
-        Query query = database.orderByChild("username").equalTo(username);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                boolean match = false;
-                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                    String dbUsername = userSnapshot.child("username").getValue(String.class);
-                    String dbPassword = userSnapshot.child("password").getValue(String.class);
-
-                    if (dbUsername != null && dbPassword != null &&
-                            dbUsername.equalsIgnoreCase(username) && dbPassword.equals(hashedPassword)) {
-                        match = true;
-                        break;
-                    }
-                }
-
-                progressBar.setVisibility(View.GONE); // Hide loading indicator
-
-                if (match) {
-                    saveLoginStatus(username);
-                    Toast.makeText(SignInActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                    navigateToMainActivity();
-                } else {
-                    Toast.makeText(SignInActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                progressBar.setVisibility(View.GONE); // Hide loading indicator
-                Log.e(TAG, "Database error: " + error.getMessage());
-                showErrorDialog();
-            }
-        });
+        // Query Firebase for user credentials
+        queryUserInDatabase(username, hashedPassword);
     }
 
     /**
-     * Validate user input.
-     *
-     * @param username The username entered by the user.
-     * @param password The password entered by the user.
-     * @return true if input is valid, false otherwise.
+     * Validate the input fields for username and password.
      */
     private boolean validateInput(String username, String password) {
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Username or Password is empty", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(username)) {
+            etUsername.setError("Enter username");
+            return false;
+        }
+        if (TextUtils.isEmpty(password)) {
+            etPassword.setError("Enter password");
             return false;
         }
         if (password.length() < MIN_PASSWORD_LENGTH) {
-            Toast.makeText(this, "Password must be at least " + MIN_PASSWORD_LENGTH + " characters", Toast.LENGTH_SHORT).show();
+            etPassword.setError("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
             return false;
         }
         return true;
     }
 
     /**
-     * Save the login status in SharedPreferences.
-     *
-     * @param username The username of the logged-in user.
-     */
-    private void saveLoginStatus(String username) {
-        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-        editor.putBoolean("isLoggedIn", true);
-        editor.putString("username", username);
-        editor.apply();
-    }
-
-    /**
      * Hash the password using SHA-256.
-     *
-     * @param password The password to hash.
-     * @return The hashed password as a hexadecimal string.
      */
     private String hashPassword(String password) {
         try {
@@ -229,19 +179,68 @@ public class SignInActivity extends AppCompatActivity {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Error hashing password", e);
-            Toast.makeText(this, "Error hashing password. Please try again.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Hashing error", e);
             return "";
         }
     }
 
     /**
-     * Show an error dialog with a generic message.
+     * Query the Firebase database to check the credentials of the user.
+     */
+    private void queryUserInDatabase(String username, String hashedPassword) {
+        Query query = database.orderByChild("username").equalTo(username);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean isValid = false;
+                for (DataSnapshot user : snapshot.getChildren()) {
+                    String dbPassword = user.child("password").getValue(String.class);
+                    if (dbPassword != null && dbPassword.equals(hashedPassword)) {
+                        isValid = true;
+                        break;
+                    }
+                }
+
+                // Hide progress bar and enable login button
+                progressBar.setVisibility(View.GONE);
+                btnLogin.setEnabled(true);
+
+                if (isValid) {
+                    saveLoginStatus(username);
+                    Toast.makeText(SignInActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                    navigateToMainActivity();
+                } else {
+                    Toast.makeText(SignInActivity.this, "Username/password incorrect", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                progressBar.setVisibility(View.GONE);
+                btnLogin.setEnabled(true);
+                showErrorDialog();
+                Log.e(TAG, "Database error: " + error.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Save the login status and username to SharedPreferences.
+     */
+    private void saveLoginStatus(String username) {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+        editor.putBoolean("isLoggedIn", true);
+        editor.putString("username", username);
+        editor.apply();
+    }
+
+    /**
+     * Show an error dialog in case of database issues.
      */
     private void showErrorDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Error")
-                .setMessage("An error occurred while accessing the database. Please try again later.")
+                .setMessage("There was a connection issue. Please try again later.")
                 .setPositiveButton("OK", null)
                 .show();
     }

@@ -1,10 +1,241 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:background="@drawable/nav_bg"
+    android:id="@+id/history_review"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.ReviewActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/navbar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@color/Mint"
+            android:elevation="4dp"
+            android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:text="Riwayat Diagnosis"
+            android:textAlignment="center"
+            android:textColor="@color/Black"
+            android:textSize="24sp"
+            tools:ignore="HardcodedText" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/cardContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="50dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:autoSizeMinTextSize="16dp"
+                    android:text="Bedasarkan data yang yang diterima :"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:targetApi="o"
+                    tools:ignore="HardcodedText" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/border"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/dataDiterima"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autoSizeMinTextSize="16dp"
+                        android:padding="5dp"
+                        android:text="- minimal pilih 3 gejala"
+                        android:textSize="16sp"
+                        tools:targetApi="o"
+                        tools:ignore="HardcodedText" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/hd"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autoSizeMinTextSize="16dp"
+                        android:text="Guest menderita :"
+                        android:textSize="16dp"
+                        tools:targetApi="o"
+                        tools:ignore="HardcodedText,SpUsage" />
+
+                </LinearLayout>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    app:cardCornerRadius="15dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:id="@+id/image"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/defenisiHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:autoSizeMinTextSize="16dp"
+                    android:text="Apa itu Hemoroid :"
+                    android:textSize="16dp"
+                    android:textStyle="bold"
+                    tools:targetApi="o"
+                    tools:ignore="HardcodedText,SpUsage" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/defenisi"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autoSizeMinTextSize="16dp"
+                        android:justificationMode="inter_word"
+                        android:text="dengan Guest kemungkinan menderita Hemoroid"
+                        android:textSize="16dp"
+                        tools:targetApi="o"
+                        tools:ignore="HardcodedText,SpUsage" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/solusiHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="5dp"
+                    android:autoSizeMinTextSize="16dp"
+                    android:text="Solusi dari Hemoroid :"
+                    android:textSize="16dp"
+                    android:textStyle="bold"
+                    tools:ignore="HardcodedText,SpUsage,UnusedAttribute" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/solusi"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autoSizeMinTextSize="16dp"
+                        android:paddingVertical="12dp"
+                        android:text="dengan Guest kemungkinan menderita Hemoroid"
+                        android:textSize="16sp"
+                        android:justificationMode="inter_word"
+                        tools:targetApi="o"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:backgroundTint="@color/Mint"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:id="@+id/btnRiwayat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/btn_bgdark"
+            android:orientation="horizontal"
+            android:paddingHorizontal="25dp"
+            android:onClick="onBackButtonClick"
+            android:paddingVertical="10dp"
+            tools:ignore="OnClick,UselessParent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:autoSizeMinTextSize="16dp"
+                android:text="Riwayat"
+                android:textColor="@color/White"
+                android:textSize="16sp"
+                tools:targetApi="o"
+                tools:ignore="HardcodedText" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/history_white" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

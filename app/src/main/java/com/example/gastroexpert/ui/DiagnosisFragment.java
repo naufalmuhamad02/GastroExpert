@@ -1,66 +1,174 @@
 package com.example.gastroexpert.ui;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.Button;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
 import com.example.gastroexpert.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import java.util.ArrayList;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DiagnosisFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DiagnosisFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private final ArrayList<CheckBox> checkBoxList = new ArrayList<>();
+    private String username;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public DiagnosisFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DiagnosisFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DiagnosisFragment newInstance(String param1, String param2) {
-        DiagnosisFragment fragment = new DiagnosisFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_diagnosis, container, false);
+
+        Button prosesButton = view.findViewById(R.id.prosesButton);
+        LinearLayout cardContainer = view.findViewById(R.id.cardContainer);
+        cardContainer.removeAllViews();
+        cardContainer.setPadding(20, 20, 20, 125);
+
+        TextView titleTextView = createTitleTextView();
+        cardContainer.addView(titleTextView);
+
+        LinearLayout parentLayout = createRequirementLayout();
+        cardContainer.addView(parentLayout);
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("gejala");
+        Query query = databaseReference.orderByChild("id_gejala");
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String idg = snapshot.child("id_gejala").getValue(String.class);
+                    String ng = snapshot.child("nama_gejala").getValue(String.class);
+
+                    if (idg != null && ng != null) {
+                        addSymptomCard(cardContainer, idg, ng);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("DiagnosisFragment", "Error fetching data: " + databaseError.getMessage());
+            }
+        });
+
+        Bundle args = getArguments();
+        if (args != null) {
+            username = args.getString("username");
+        }
+
+        prosesButton.setOnClickListener(v -> handleProsesButtonClick());
+
+        return view;
+    }
+
+    private void handleProsesButtonClick() {
+        StringBuilder gejalaTerpilih = new StringBuilder();
+        int checkedCount = 0;
+
+        for (CheckBox checkBox : checkBoxList) {
+            if (checkBox.isChecked()) {
+                gejalaTerpilih.append(checkBox.getText().toString()).append("#");
+                checkedCount++;
+            }
+        }
+
+        if (checkedCount == 0) {
+            Toast.makeText(requireContext(), "Silakan pilih gejala dahulu!", Toast.LENGTH_SHORT).show();
+        } else if (checkedCount < 5) {
+            Toast.makeText(requireContext(), "Minimal pilih 5 gejala!", Toast.LENGTH_SHORT).show();
+        } else if (checkedCount > 8) {
+            Toast.makeText(requireContext(), "Maksimal pilih 8 gejala!", Toast.LENGTH_SHORT).show();
+        } else {
+            Intent intent = new Intent(requireContext(), ResultDiagnosisActivity.class);
+            intent.putExtra("HASIL", gejalaTerpilih.toString());
+            intent.putExtra("username", username);
+            startActivity(intent);
+            requireActivity().finish();
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_diagnosis, container, false);
+    @SuppressLint("SetTextI18n")
+    private TextView createTitleTextView() {
+        TextView titleTextView = new TextView(requireContext());
+        LinearLayout.LayoutParams titleLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        titleLayoutParams.setMargins(0, 50, 0, 20);
+        titleTextView.setLayoutParams(titleLayoutParams);
+        titleTextView.setText("Daftar Gejala");
+        titleTextView.setTextSize(24);
+        titleTextView.setTextColor(getResources().getColor(R.color.Black));
+        titleTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        return titleTextView;
+    }
+
+    @SuppressLint("SetTextI18n")
+    private LinearLayout createRequirementLayout() {
+        LinearLayout parentLayout = new LinearLayout(requireContext());
+        parentLayout.setOrientation(LinearLayout.VERTICAL);
+        parentLayout.setPadding(8, 8, 8, 8);
+        parentLayout.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+
+        TextView titleText = new TextView(requireContext());
+        titleText.setText("Ketentuan");
+        titleText.setTextSize(20);
+        parentLayout.addView(titleText);
+
+        TextView minRequirementTextView = new TextView(requireContext());
+        minRequirementTextView.setText("- minimal pilih 5 gejala");
+        minRequirementTextView.setTextSize(16);
+        parentLayout.addView(minRequirementTextView);
+
+        TextView maxRequirementTextView = new TextView(requireContext());
+        maxRequirementTextView.setText("- maksimal pilih 8 gejala");
+        maxRequirementTextView.setTextSize(16);
+        parentLayout.addView(maxRequirementTextView);
+
+        return parentLayout;
+    }
+
+    private void addSymptomCard(LinearLayout cardContainer, String idg, String ng) {
+        CardView cardView = new CardView(requireContext());
+        LinearLayout.LayoutParams cardLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        cardLayoutParams.setMargins(20, 0, 20, 60);
+        cardView.setLayoutParams(cardLayoutParams);
+        cardView.setCardElevation(5);
+        cardView.setRadius(30);
+
+        LinearLayout layout = new LinearLayout(requireContext());
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setPadding(16, 16, 16, 16);
+
+        CheckBox checkBox = new CheckBox(requireContext());
+        checkBox.setId(idg.hashCode());
+        LinearLayout.LayoutParams checkBoxParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT);
+        checkBoxParams.weight = 1;
+        checkBox.setLayoutParams(checkBoxParams);
+        checkBox.setText(ng);
+        layout.addView(checkBox);
+
+        checkBoxList.add(checkBox);
+        cardView.addView(layout);
+        cardContainer.addView(cardView);
     }
 }

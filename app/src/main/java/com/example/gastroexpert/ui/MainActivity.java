@@ -2,14 +2,12 @@ package com.example.gastroexpert.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -29,67 +27,71 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Enable edge-to-edge display for better visual integration
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            EdgeToEdge.enable(this);
+        // Initialize Edge-to-Edge display for fullscreen
+        EdgeToEdge.enable(this);
+
+        // Set up the toolbar and drawer layout
+        setUpToolbar();
+        setUpDrawerLayout();
+
+        // Retrieve the username from Intent or default to "Guest"
+        username = getIntent().getStringExtra("username");
+        if (username == null || username.isEmpty()) {
+            username = "Guest";  // Default username if none is passed
         }
 
-        // Set up the toolbar
+        // Navigate to the relevant fragment
+        handleFragmentNavigation();
+    }
+
+    private void setUpToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+    }
 
-        // Initialize the DrawerLayout
+    private void setUpDrawerLayout() {
         drawerLayout = findViewById(R.id.drawer_layout);
-
-        // Set up the NavigationView and set the item selection listener
         NavigationView navigationView = findViewById(R.id.nav_view);
-        if (navigationView == null) {
-            Log.e(TAG, "NavigationView not found in layout");
-            return;
-        }
-        navigationView.setNavigationItemSelectedListener(this);
 
-        // Set up the ActionBarDrawerToggle to handle the hamburger icon and drawer opening/closing
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(this);
+        } else {
+            Log.e(TAG, "NavigationView not found in layout");
+        }
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
+                this, drawerLayout, findViewById(R.id.toolbar), R.string.open_nav, R.string.close_nav);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+    }
 
-        // Retrieve the username from the intent
-        username = getIntent().getStringExtra("username");
-        if (username == null) {
-            username = "Guest";
-        }
-
-        // Check if the app should navigate to a specific fragment based on the intent
+    private void handleFragmentNavigation() {
         String navigateTo = getIntent().getStringExtra("navigateTo");
+
         if ("diagnosis".equals(navigateTo)) {
             navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
         } else {
-            navigateToFragment(new HomeFragment(), null, R.id.nav_beranda);
+            navigateToFragment(new HomeFragment(), username, R.id.nav_beranda);
         }
     }
 
-    /**
-     * Navigate to a specific fragment.
-     *
-     * @param fragment The fragment to navigate to.
-     * @param username The username to pass to the fragment (if applicable).
-     * @param menuItemId The menu item ID to mark as checked.
-     */
     private void navigateToFragment(androidx.fragment.app.Fragment fragment, String username, int menuItemId) {
         if (username != null) {
             Bundle args = new Bundle();
             args.putString("username", username);
             fragment.setArguments(args);
         }
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
 
-        // Set the selected menu item
+        setSelectedMenuItem(menuItemId);
+    }
+
+    private void setSelectedMenuItem(int menuItemId) {
         NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             navigationView.getMenu().findItem(menuItemId).setChecked(true);
@@ -104,38 +106,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             int id = item.getItemId();
 
             if (id == R.id.nav_beranda) {
-                navigateToFragment(new HomeFragment(), null, R.id.nav_beranda);
-                Log.d(TAG, "Navigated to HomeFragment");
+                navigateToFragment(new HomeFragment(), username, R.id.nav_beranda);
             } else if (id == R.id.nav_penyakit) {
-                navigateToFragment(new DiseaseFragment(), null, R.id.nav_penyakit);
-                Log.d(TAG, "Navigated to DiseaseFragment");
+                navigateToFragment(new DiseaseFragment(), username, R.id.nav_penyakit);
             } else if (id == R.id.nav_tentang) {
-                navigateToFragment(new AboutFragment(), null, R.id.nav_tentang);
-                Log.d(TAG, "Navigated to AboutFragment");
+                navigateToFragment(new AboutFragment(), username, R.id.nav_tentang);
             } else if (id == R.id.nav_riwayat) {
-                navigateToFragment(new HistoryFragment(), null, R.id.nav_riwayat);
-                Log.d(TAG, "Navigated to HistoryFragment");
+                navigateToFragment(new HistoryFragment(), username, R.id.nav_riwayat);
             } else if (id == R.id.nav_diagnosis) {
                 navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
-                Log.d(TAG, "Navigated to DiagnosisFragment");
             } else if (id == R.id.nav_logout) {
                 logout();
-                Log.d(TAG, "Logged out");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error handling navigation item selection", e);
         }
+
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    /**
-     * Handle logout functionality.
-     */
     private void logout() {
         SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
         editor.clear();
         editor.apply();
+
         Intent logoutIntent = new Intent(MainActivity.this, SignInActivity.class);
         logoutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(logoutIntent);
@@ -144,33 +139,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("Keluar")
-                    .setMessage("Apakah Anda yakin ingin keluar dari aplikasi?")
-                    .setPositiveButton("Ya", (dialog, which) -> finish())
-                    .setNegativeButton("Tidak", null)
-                    .show();
+            super.onBackPressed();
         }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        try {
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-            if (!isLoggedIn) {
-                Intent loginIntent = new Intent(MainActivity.this, SignInActivity.class);
-                loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(loginIntent);
-                finish();
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking login status", e);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+
+        if (!isLoggedIn) {
+            Intent loginIntent = new Intent(MainActivity.this, SignInActivity.class);
+            loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(loginIntent);
+            finish();
         }
     }
 }

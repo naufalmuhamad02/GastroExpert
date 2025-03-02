@@ -1,14 +1,132 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.HomeFragment">
+    android:background="@drawable/nav_bg"
+    android:id="@+id/home"
+    tools:context="ui.HomeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ImageView
+        android:id="@+id/background"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"
-        android:gravity="center"/>
-</FrameLayout>
+        android:layout_height="200dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="220dp"
+        android:clipToOutline="true"
+        android:contentDescription="Home Profile"
+        android:scaleType="centerCrop"
+        android:src="@drawable/welcome"
+        tools:targetApi="s"
+        tools:ignore="HardcodedText" />
+
+    <ImageView
+        android:id="@+id/profile_image_view"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="126dp"
+        android:layout_marginTop="43dp"
+        android:background="@drawable/circular_bg"
+        android:backgroundTint="@color/White"
+        android:clipToOutline="true"
+        android:contentDescription="Profile Image"
+        android:padding="0dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/gastro_vector"
+        tools:targetApi="s"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/background"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="30dp"
+        android:lineHeight="25dp"
+        android:text="Sistem Pakar Diagnosis Gangguan Pencernaan Pada Manusia Menggunakan Metode Forward Chaining"
+        android:textAlignment="center"
+        android:textColor="@color/Black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:targetApi="p"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/welcome"
+        android:layout_width="121dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/profile_image_view"
+        android:layout_alignStart="@+id/profile_image_view"
+        android:layout_marginStart="-23dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="5dp"
+        android:fontFamily="sans-serif-light"
+        android:text="Selamat Datang"
+        android:textAlignment="center"
+        android:textColor="@color/Black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/welcome"
+        android:layout_alignStart="@+id/welcome"
+        android:layout_alignEnd="@+id/welcome"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="21dp"
+        android:fontFamily="sans-serif-thin"
+        android:text="username"
+        android:textAlignment="center"
+        android:textColor="@color/Blue"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/copyright"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:textAlignment="center"
+        android:layout_marginBottom="30dp"
+        android:fontFamily="sans-serif-light"
+        android:text="GastroExpert 2025 © Muhamad Naufal. All Right Reserved."
+        android:textColor="@color/Black"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/tanggal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="sans-serif-thin"
+        android:text="01/05/2024"
+        android:textColor="@color/Black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
+
+</RelativeLayout>

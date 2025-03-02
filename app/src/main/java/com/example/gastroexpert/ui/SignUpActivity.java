@@ -44,42 +44,47 @@ public class SignUpActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_up);
 
-        // Check login status
+        // Check if user is already logged in
         if (isLoggedIn()) {
             navigateToMainActivity();
             return;
         }
 
-        // Initialize UI components
+        initializeUIComponents();
+        setupListeners();
+
+        // Initialize Firebase database reference
+        database = FirebaseDatabase.getInstance().getReference("users");
+    }
+
+    private void initializeUIComponents() {
         etUsername = findViewById(R.id.etUsername);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        Button btnRegister = findViewById(R.id.btnRegister);
-        TextView tvHaveAccount = findViewById(R.id.memilikiAkun);
         showPassBtn = findViewById(R.id.show_pass_btn);
         showConfirmPassBtn = findViewById(R.id.show_confirm_pass_btn);
         progressBar = findViewById(R.id.progressBar);
+    }
 
-        // Initialize database reference
-        database = FirebaseDatabase.getInstance().getReference("users");
+    private void setupListeners() {
+        Button btnRegister = findViewById(R.id.btnRegister);
+        TextView tvHaveAccount = findViewById(R.id.memilikiAkun);
 
-        // Listener for navigating to the login page
+        // Listener for navigating to login page
         tvHaveAccount.setOnClickListener(view -> navigateToSignInActivity());
 
         // Listener for showing/hiding password
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility(etPassword, showPassBtn));
 
         // Listener for showing/hiding confirm password
-        showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(
-                etConfirmPassword, showConfirmPassBtn
-        ));
+        showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(etConfirmPassword, showConfirmPassBtn));
 
-        // Validate username
+        // Text watchers for real-time validation
         etUsername.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -93,7 +98,6 @@ public class SignUpActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Validate email
         etEmail.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -107,7 +111,6 @@ public class SignUpActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Validate password
         etPassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -121,48 +124,27 @@ public class SignUpActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Listener for the register button
+        // Listener for register button
         btnRegister.setOnClickListener(view -> handleRegistration());
     }
 
-    /**
-     * Check if the user is already logged in.
-     *
-     * @return true if logged in, false otherwise.
-     */
     private boolean isLoggedIn() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
-        if (isLoggedIn) {
-            Log.d(TAG, "User is already logged in");
-        }
-        return isLoggedIn;
+        return prefs.getBoolean("isLoggedIn", false);
     }
 
-    /**
-     * Navigate to the main activity.
-     */
     private void navigateToMainActivity() {
-        Intent mainIntent = new Intent(SignUpActivity.this, MainActivity.class);
-        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(mainIntent);
+        Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
-    /**
-     * Navigate to the sign-in activity.
-     */
     private void navigateToSignInActivity() {
-        Intent loginIntent = new Intent(this, SignInActivity.class);
-        startActivity(loginIntent);
+        Intent intent = new Intent(this, SignInActivity.class);
+        startActivity(intent);
     }
 
-    /**
-     * Toggle password visibility.
-     *
-     * @param editText The EditText field to toggle.
-     * @param imageView The ImageView button to change.
-     */
     private void togglePasswordVisibility(EditText editText, ImageView imageView) {
         int selection = editText.getSelectionEnd();
         if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
@@ -175,37 +157,28 @@ public class SignUpActivity extends AppCompatActivity {
         editText.setSelection(selection);
     }
 
-    /**
-     * Validate the username field.
-     */
     private void validateUsername() {
         String username = etUsername.getText().toString().trim();
         if (username.isEmpty()) {
-            etUsername.setError("Masukkan username");
+            etUsername.setError("Enter username");
         } else if (username.length() >= MAX_USERNAME_LENGTH) {
-            etUsername.setError("Username harus kurang dari " + MAX_USERNAME_LENGTH + " karakter");
+            etUsername.setError("Username must be less than " + MAX_USERNAME_LENGTH + " characters");
         } else {
             etUsername.setError(null);
         }
     }
 
-    /**
-     * Validate the email field.
-     */
     private void validateEmail() {
         String email = etEmail.getText().toString().trim();
         if (email.isEmpty()) {
-            etEmail.setError("Masukkan email");
+            etEmail.setError("Enter email");
         } else if (!isValidEmail(email)) {
-            etEmail.setError("Email tidak valid");
+            etEmail.setError("Invalid email address");
         } else {
             etEmail.setError(null);
         }
     }
 
-    /**
-     * Validate the password field.
-     */
     private void validatePassword() {
         String password = etPassword.getText().toString().trim();
         String username = etUsername.getText().toString().trim();
@@ -213,23 +186,20 @@ public class SignUpActivity extends AppCompatActivity {
         String passwordRegex = "^(?=.*\\d)[\\w\\W]*$";
 
         if (password.isEmpty()) {
-            etPassword.setError("Masukkan password");
+            etPassword.setError("Enter password");
         } else if (password.length() >= MAX_PASSWORD_LENGTH) {
-            etPassword.setError("Password harus kurang dari " + MAX_PASSWORD_LENGTH + " karakter");
+            etPassword.setError("Password must be less than " + MAX_PASSWORD_LENGTH + " characters");
         } else if (password.equals(username)) {
-            etPassword.setError("Password tidak boleh sama dengan username");
+            etPassword.setError("Password cannot be the same as username");
         } else if (!password.matches(passwordRegex)) {
-            etPassword.setError("Password setidaknya harus mengandung satu angka");
+            etPassword.setError("Password must contain at least one number");
         } else if (password.equals(email)) {
-            etPassword.setError("Password tidak boleh sama dengan email");
+            etPassword.setError("Password cannot be the same as email");
         } else {
             etPassword.setError(null);
         }
     }
 
-    /**
-     * Handle the registration process.
-     */
     private void handleRegistration() {
         String username = etUsername.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
@@ -240,8 +210,9 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        progressBar.setVisibility(View.VISIBLE); // Show loading indicator
+        progressBar.setVisibility(View.VISIBLE);
 
+        // Check if username or email is already taken
         Query usernameQuery = database.orderByChild("username").equalTo(username);
         Query emailQuery = database.orderByChild("email").equalTo(email);
 
@@ -249,7 +220,7 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    etUsername.setError("Username sudah digunakan");
+                    etUsername.setError("Username already taken");
                     progressBar.setVisibility(View.GONE);
                     return;
                 }
@@ -258,14 +229,14 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            etEmail.setError("Email sudah digunakan");
+                            etEmail.setError("Email already taken");
                             progressBar.setVisibility(View.GONE);
                             return;
                         }
 
                         String hashedPassword = hashPassword(password);
                         if (hashedPassword == null) {
-                            Toast.makeText(SignUpActivity.this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity.this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
                             progressBar.setVisibility(View.GONE);
                             return;
                         }
@@ -287,46 +258,30 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Validate user input.
-     *
-     * @param username The username entered by the user.
-     * @param email The email entered by the user.
-     * @param password The password entered by the user.
-     * @param confirmPassword The confirm password entered by the user.
-     * @return true if input is valid, false otherwise.
-     */
     private boolean validateInput(String username, String email, String password, String confirmPassword) {
         if (TextUtils.isEmpty(username)) {
-            etUsername.setError("Masukkan username");
+            etUsername.setError("Enter username");
             return false;
         }
         if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Masukkan email");
+            etEmail.setError("Enter email");
             return false;
         }
         if (TextUtils.isEmpty(password)) {
-            etPassword.setError("Masukkan password");
+            etPassword.setError("Enter password");
             return false;
         }
         if (TextUtils.isEmpty(confirmPassword)) {
-            etConfirmPassword.setError("Konfirmasi password");
+            etConfirmPassword.setError("Confirm password");
             return false;
         }
         if (!password.equals(confirmPassword)) {
-            etConfirmPassword.setError("Password tidak cocok");
+            etConfirmPassword.setError("Passwords do not match");
             return false;
         }
         return true;
     }
 
-    /**
-     * Save user data to the database.
-     *
-     * @param username The username of the user.
-     * @param email The email of the user.
-     * @param hashedPassword The hashed password of the user.
-     */
     private void saveUserData(String username, String email, String hashedPassword) {
         String userId = database.push().getKey();
         if (userId != null) {
@@ -334,31 +289,15 @@ public class SignUpActivity extends AppCompatActivity {
                     .addOnSuccessListener(aVoid -> database.child(userId).child("email").setValue(email)
                             .addOnSuccessListener(aVoid1 -> database.child(userId).child("password").setValue(hashedPassword)
                                     .addOnSuccessListener(aVoid2 -> {
-                                        Toast.makeText(SignUpActivity.this, "Berhasil membuat akun", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(SignUpActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
                                         navigateToSignInActivity();
                                     })
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(SignUpActivity.this, "Gagal menyimpan password", Toast.LENGTH_SHORT).show();
-                                        Log.e(TAG, "Database error: " + e.getMessage());
-                                    }))
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(SignUpActivity.this, "Gagal menyimpan email", Toast.LENGTH_SHORT).show();
-                                Log.e(TAG, "Database error: " + e.getMessage());
-                            }))
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(SignUpActivity.this, "Gagal menyimpan username", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Database error: " + e.getMessage());
-                    });
+                            )
+                    );
         }
-        progressBar.setVisibility(View.GONE); // Hide loading indicator
+        progressBar.setVisibility(View.GONE);
     }
 
-    /**
-     * Hash the password using SHA-256.
-     *
-     * @param password The password to hash.
-     * @return The hashed password as a hexadecimal string.
-     */
     private String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -370,34 +309,23 @@ public class SignUpActivity extends AppCompatActivity {
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Hashing error: " + e.getMessage());
-            Toast.makeText(this, "Gagal mengenkripsi password. Silakan coba lagi.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
             return null;
         }
     }
 
-    /**
-     * Validate email using regex.
-     *
-     * @param email The email to validate.
-     * @return true if email is valid, false otherwise.
-     */
-    private boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        return email.matches(emailRegex);
-    }
-
-    /**
-     * Handle database errors.
-     *
-     * @param error The database error.
-     */
     private void handleDatabaseError(DatabaseError error) {
-        progressBar.setVisibility(View.GONE); // Hide loading indicator
+        progressBar.setVisibility(View.GONE);
         Log.e(TAG, "Database error: " + error.getMessage());
         new AlertDialog.Builder(this)
                 .setTitle("Error")
-                .setMessage("Terjadi kesalahan saat memeriksa database. Silakan coba lagi nanti.")
+                .setMessage("There was an error checking the database. Please try again later.")
                 .setPositiveButton("OK", null)
                 .show();
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return email.matches(emailRegex);
     }
 }
