@@ -8,9 +8,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
@@ -20,10 +23,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import android.widget.ImageView;
 
 public class HistoryFragment extends Fragment {
     boolean riwayatFound = false;
+    private LinearLayout cardContainer;
+    private ProgressBar progressBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,14 +35,22 @@ public class HistoryFragment extends Fragment {
 
         String username = requireActivity().getIntent().getStringExtra("username");
 
+        // Initialize the UI components
+        cardContainer = view.findViewById(R.id.cardContainer);
+        progressBar = view.findViewById(R.id.progressBar);
+
+        // Show loading indicator while fetching data
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Get reference to the Firebase database
         DatabaseReference database = FirebaseDatabase.getInstance().getReference("Riwayat");
 
         database.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (isAdded()) {
-                    LinearLayout cardContainer = view.findViewById(R.id.cardContainer);
                     cardContainer.removeAllViews();
+                    riwayatFound = false;
 
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                         String dbusername = userSnapshot.getKey();
@@ -62,12 +74,17 @@ public class HistoryFragment extends Fragment {
                         RelativeLayout noDataLayout = createNoDataLayout();
                         cardContainer.addView(noDataLayout);
                     }
+
+                    // Hide progress bar once data is fetched
+                    progressBar.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Handle cancellation
+                // Handle error and hide progress bar
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(requireContext(), "Failed to load history data", Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -18,54 +18,59 @@ import java.util.Locale;
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
+    private static final String PREFS_NAME = "MyPrefs";
+    private TextView nameTextView;
+    private TextView dateTextView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Get the username from the arguments or default to "Guest"
-        String username = getUsernameFromArguments();
+        // Initialize UI components
+        nameTextView = view.findViewById(R.id.name);
+        dateTextView = view.findViewById(R.id.tanggal);
 
-        // Log the username for debugging
-        Log.d(TAG, "Username: " + username);
+        // Retrieve the username from SharedPreferences or fallback to "Guest"
+        String username = getUsernameFromPreferences();
 
-        // Display username in the TextView
-        displayUsername(view, username);
-
-        // Display current date
-        displayCurrentDate(view);
+        // Display username and current date
+        displayUsername(username);
+        displayCurrentDate();
 
         return view;
     }
 
     /**
-     * Retrieve the username passed from MainActivity or fallback to "Guest".
+     * Retrieve the username from SharedPreferences or fallback to "Guest".
      */
-    private String getUsernameFromArguments() {
-        return getArguments() != null ? getArguments().getString("username") : "Guest";
+    private String getUsernameFromPreferences() {
+        SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("username", "Guest"); // Default to "Guest" if not found
     }
 
     /**
      * Display the username in the TextView.
      *
-     * @param view The root view of the fragment.
      * @param username The username to display.
      */
-    private void displayUsername(View view, String username) {
-        TextView nameTextView = view.findViewById(R.id.name);
-        nameTextView.setText(username);
+    private void displayUsername(String username) {
+        if (nameTextView != null) {
+            nameTextView.setText(username);
+        } else {
+            Log.e(TAG, "nameTextView is null");
+        }
     }
 
     /**
      * Display the current date in the TextView.
-     *
-     * @param view The root view of the fragment.
      */
-    private void displayCurrentDate(View view) {
-        TextView dateTextView = view.findViewById(R.id.tanggal);
-        String currentDate = getCurrentDate();
-        dateTextView.setText(currentDate);
+    private void displayCurrentDate() {
+        if (dateTextView != null) {
+            String currentDate = getCurrentDate();
+            dateTextView.setText(currentDate);
+        } else {
+            Log.e(TAG, "dateTextView is null");
+        }
     }
 
     /**
@@ -89,7 +94,7 @@ public class HomeFragment extends Fragment {
      */
     private void clearLoginStatus() {
         SharedPreferences.Editor editor = requireActivity()
-                .getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit();
         editor.clear();
         editor.putBoolean("isLoggedIn", false);
@@ -120,7 +125,7 @@ public class HomeFragment extends Fragment {
      * Check if the user is logged in by checking the SharedPreferences.
      */
     private boolean isUserLoggedIn() {
-        SharedPreferences prefs = requireActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean("isLoggedIn", false);
     }
 }

@@ -23,7 +23,20 @@
             android:text="Daftar Penyakit"
             android:textAlignment="center"
             android:textColor="@color/Black"
-            android:textSize="24dp" />
+            android:textSize="24sp"
+            tools:ignore="HardcodedText" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:layout_alignParentTop="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ObsoleteLayoutParam" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -41,6 +54,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
+                    android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
                     />
 
@@ -49,10 +63,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="Jamur"
+                    android:text="Gerd"
                     android:layout_marginStart="12dp"
-                    android:textSize="20dp"
-                    android:textColor="@color/Black"/>
+                    android:textSize="20sp"
+                    android:textColor="@color/Black"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
@@ -72,6 +87,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
+                    android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
                     />
 
@@ -80,10 +96,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="Jamur"
+                    android:text="Gerd"
                     android:layout_marginStart="12dp"
-                    android:textSize="20dp"
-                    android:textColor="@color/Black"/>
+                    android:textSize="20sp"
+                    android:textColor="@color/Black"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
@@ -103,6 +120,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
+                    android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
                     />
 
@@ -111,10 +129,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="Jamur"
+                    android:text="Gerd"
                     android:layout_marginStart="12dp"
-                    android:textSize="20dp"
-                    android:textColor="@color/Black"/>
+                    android:textSize="20sp"
+                    android:textColor="@color/Black"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
@@ -135,6 +154,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
+                android:importantForAccessibility="no"
                 android:scaleType="centerCrop"
                 />
 
@@ -143,13 +163,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="12dp"
-                android:text="Jamur"
+                android:text="Gerd"
                 android:layout_marginStart="12dp"
-                android:textSize="20dp"
-                android:textColor="@color/Black"/>
+                android:textSize="20sp"
+                android:textColor="@color/Black"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
     </LinearLayout>
+
 </ScrollView>

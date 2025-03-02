@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -34,7 +35,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     private static final String TAG = "SignUpActivity";
     private static final String PREFS_NAME = "MyPrefs";
+    private static final int MIN_USERNAME_LENGTH = 3;
     private static final int MAX_USERNAME_LENGTH = 20;
+    private static final int MIN_PASSWORD_LENGTH = 6;
     private static final int MAX_PASSWORD_LENGTH = 20;
 
     private EditText etUsername, etEmail, etPassword, etConfirmPassword;
@@ -124,6 +127,19 @@ public class SignUpActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
+        etConfirmPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateConfirmPassword();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         // Listener for register button
         btnRegister.setOnClickListener(view -> handleRegistration());
     }
@@ -161,8 +177,12 @@ public class SignUpActivity extends AppCompatActivity {
         String username = etUsername.getText().toString().trim();
         if (username.isEmpty()) {
             etUsername.setError("Enter username");
+        } else if (username.length() < MIN_USERNAME_LENGTH) {
+            etUsername.setError("Username must be at least " + MIN_USERNAME_LENGTH + " characters");
         } else if (username.length() >= MAX_USERNAME_LENGTH) {
             etUsername.setError("Username must be less than " + MAX_USERNAME_LENGTH + " characters");
+        } else if (!username.matches("[a-zA-Z0-9]+")) {
+            etUsername.setError("Username must contain only letters and numbers");
         } else {
             etUsername.setError(null);
         }
@@ -187,6 +207,8 @@ public class SignUpActivity extends AppCompatActivity {
 
         if (password.isEmpty()) {
             etPassword.setError("Enter password");
+        } else if (password.length() < MIN_PASSWORD_LENGTH) {
+            etPassword.setError("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
         } else if (password.length() >= MAX_PASSWORD_LENGTH) {
             etPassword.setError("Password must be less than " + MAX_PASSWORD_LENGTH + " characters");
         } else if (password.equals(username)) {
@@ -198,6 +220,24 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             etPassword.setError(null);
         }
+    }
+
+    private void validateConfirmPassword() {
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+        if (confirmPassword.isEmpty()) {
+            etConfirmPassword.setError("Confirm password");
+        } else if (!password.equals(confirmPassword)) {
+            etConfirmPassword.setError("Passwords do not match");
+        } else {
+            etConfirmPassword.setError(null);
+        }
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return email.matches(emailRegex);
     }
 
     private void handleRegistration() {
@@ -235,11 +275,6 @@ public class SignUpActivity extends AppCompatActivity {
                         }
 
                         String hashedPassword = hashPassword(password);
-                        if (hashedPassword == null) {
-                            Toast.makeText(SignUpActivity.this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
-                            return;
-                        }
 
                         saveUserData(username, email, hashedPassword);
                     }
@@ -293,24 +328,40 @@ public class SignUpActivity extends AppCompatActivity {
                                         navigateToSignInActivity();
                                     })
                             )
-                    );
+                    )
+                    .addOnFailureListener(e -> {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e(TAG, "Error saving user data", e);
+                        Toast.makeText(SignUpActivity.this, "Failed to create account", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            progressBar.setVisibility(View.GONE);
+            Log.e(TAG, "Error generating user ID");
+            Toast.makeText(SignUpActivity.this, "Failed to create account", Toast.LENGTH_SHORT).show();
         }
-        progressBar.setVisibility(View.GONE);
     }
 
+    /**
+     * Hash the password using SHA-256.
+     */
     private String hashPassword(String password) {
         try {
+            // Create a MessageDigest instance for SHA-256
             MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            // Perform the hash calculation
             byte[] hashBytes = md.digest(password.getBytes());
+
+            // Convert the byte array to a hexadecimal string
             StringBuilder sb = new StringBuilder();
             for (byte b : hashBytes) {
-                sb.append(String.format("%02x", b));
+                sb.append(String.format("%02x", b)); // Convert each byte to a 2-digit hex value
             }
-            return sb.toString();
+
+            return sb.toString();  // Return the hashed password as a hexadecimal string
         } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Hashing error: " + e.getMessage());
-            Toast.makeText(this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
-            return null;
+            Log.e(TAG, "Hashing error", e);
+            return "";  // Return an empty string in case of an error
         }
     }
 
@@ -322,10 +373,5 @@ public class SignUpActivity extends AppCompatActivity {
                 .setMessage("There was an error checking the database. Please try again later.")
                 .setPositiveButton("OK", null)
                 .show();
-    }
-
-    private boolean isValidEmail(String email) {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        return email.matches(emailRegex);
     }
 }

@@ -1,8 +1,6 @@
 package com.example.gastroexpert.ui;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -11,13 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.gastroexpert.R;
@@ -29,7 +27,9 @@ import com.google.firebase.database.ValueEventListener;
 
 public class DiseaseFragment extends Fragment {
 
+    private static final String TAG = "DiseaseFragment";
     private LinearLayout cardContainer;
+    private ProgressBar progressBar;
 
     @SuppressLint("SetTextI18n")
     @Nullable
@@ -37,9 +37,15 @@ public class DiseaseFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_disease, container, false);
 
-        // Initialize card container
+        // Initialize card container and progress bar
         cardContainer = view.findViewById(R.id.cardContainer);
-        cardContainer.removeAllViews(); // Clear any pre-existing views
+        progressBar = view.findViewById(R.id.progressBar);
+
+        // Clear any pre-existing views
+        cardContainer.removeAllViews();
+
+        // Show loading indicator while fetching data
+        progressBar.setVisibility(View.VISIBLE);
 
         // Title for the fragment
         TextView titleTextView = createTitleTextView();
@@ -52,6 +58,9 @@ public class DiseaseFragment extends Fragment {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Hide loading indicator when data is fetched
+                progressBar.setVisibility(View.GONE);
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     // Extract disease name and image URL
                     String namaPenyakit = snapshot.child("nama_penyakit").getValue(String.class);
@@ -67,27 +76,13 @@ public class DiseaseFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 // Handle error here
-                Log.e("DiseaseFragment", "Database Error: " + databaseError.getMessage());
+                progressBar.setVisibility(View.GONE);
+                Log.e(TAG, "Database Error: " + databaseError.getMessage());
+                Toast.makeText(getActivity(), "Failed to load data", Toast.LENGTH_SHORT).show();
             }
         });
 
         return view;
-    }
-
-    @SuppressLint("SetTextI18n")
-    private TextView createTitleTextView() {
-        TextView titleTextView = new TextView(requireContext());
-        LinearLayout.LayoutParams titleLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        titleLayoutParams.setMargins(0, 80, 0, 100); // Set margin
-        titleTextView.setLayoutParams(titleLayoutParams);
-        titleTextView.setText("Daftar Penyakit");
-        titleTextView.setTextSize(24);
-        titleTextView.setTextColor(getResources().getColor(R.color.Black));
-        titleTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        return titleTextView;
     }
 
     /**
@@ -123,9 +118,6 @@ public class DiseaseFragment extends Fragment {
 
         // Add layout to CardView
         cardView.addView(layout);
-
-        // Add onClickListener to store the disease name in SharedPreferences
-        cardView.setOnClickListener(v -> saveDiseaseToPreferences(diseaseName));
 
         // Finally, add the CardView to the container
         cardContainer.addView(cardView);
@@ -168,14 +160,21 @@ public class DiseaseFragment extends Fragment {
     }
 
     /**
-     * Save the disease name to SharedPreferences when a user clicks on a disease card.
+     * Create title for the fragment.
      */
-    private void saveDiseaseToPreferences(String diseaseName) {
-        // Save the selected disease name to SharedPreferences
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("DiseasePrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("selected_disease", diseaseName);  // Save disease name
-        editor.apply();  // Apply changes
-        Log.d("DiseaseFragment", "Saved disease name: " + diseaseName);
+    @SuppressLint("SetTextI18n")
+    private TextView createTitleTextView() {
+        TextView titleTextView = new TextView(requireContext());
+        LinearLayout.LayoutParams titleLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        titleLayoutParams.setMargins(0, 80, 0, 100); // Set margin
+        titleTextView.setLayoutParams(titleLayoutParams);
+        titleTextView.setText("Daftar Penyakit");
+        titleTextView.setTextSize(24);
+        titleTextView.setTextColor(getResources().getColor(R.color.Black));
+        titleTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        return titleTextView;
     }
 }

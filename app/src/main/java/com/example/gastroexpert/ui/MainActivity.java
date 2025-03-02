@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import com.example.gastroexpert.R;
 import com.google.android.material.navigation.NavigationView;
 
@@ -27,10 +30,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Edge-to-Edge display for fullscreen
+        // Enable Edge-to-Edge display for full screen
         EdgeToEdge.enable(this);
 
-        // Set up the toolbar and drawer layout
+        // Set up toolbar and drawer layout
         setUpToolbar();
         setUpDrawerLayout();
 
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             username = "Guest";  // Default username if none is passed
         }
 
-        // Navigate to the relevant fragment
+        // Load the appropriate fragment based on the intent extras
         handleFragmentNavigation();
     }
 
@@ -75,18 +78,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void navigateToFragment(androidx.fragment.app.Fragment fragment, String username, int menuItemId) {
+    private void navigateToFragment(Fragment fragment, String username, int menuItemId) {
         if (username != null) {
             Bundle args = new Bundle();
             args.putString("username", username);
             fragment.setArguments(args);
         }
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
 
         setSelectedMenuItem(menuItemId);
     }

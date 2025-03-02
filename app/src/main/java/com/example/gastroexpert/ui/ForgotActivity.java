@@ -30,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 public class ForgotActivity extends AppCompatActivity {
 
     private static final String TAG = "ForgotActivity";
+    private static final int MIN_PASSWORD_LENGTH = 6;
 
     private EditText etUsername, etPassword, etConfirmPassword;
     private ImageView showPassBtn, showConfirmPassBtn;
@@ -48,7 +49,7 @@ public class ForgotActivity extends AppCompatActivity {
         // Initialize Firebase database reference
         database = FirebaseDatabase.getInstance().getReference("users");
 
-        // Set up listeners
+        // Set up listeners for buttons
         setupListeners();
     }
 
@@ -59,21 +60,19 @@ public class ForgotActivity extends AppCompatActivity {
         showPassBtn = findViewById(R.id.show_pass_btn);
         showConfirmPassBtn = findViewById(R.id.show_confpass_btn);
         progressBar = findViewById(R.id.progressBar);
+    }
 
+    private void setupListeners() {
         Button btnChangePassword = findViewById(R.id.btnGanti);
         TextView tvLogin = findViewById(R.id.ingat);
 
-        // Set up listeners for buttons
+        // Listener for changing password
         btnChangePassword.setOnClickListener(view -> handleChangePassword());
         tvLogin.setOnClickListener(view -> navigateToSignInActivity());
 
         // Show/hide password and confirm password
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility(etPassword, showPassBtn));
         showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(etConfirmPassword, showConfirmPassBtn));
-    }
-
-    private void setupListeners() {
-        // Add other listeners, if necessary
     }
 
     private void togglePasswordVisibility(EditText editText, ImageView imageView) {
@@ -90,6 +89,7 @@ public class ForgotActivity extends AppCompatActivity {
 
     private void navigateToSignInActivity() {
         startActivity(new Intent(this, SignInActivity.class));
+        finish();
     }
 
     private void handleChangePassword() {
@@ -139,6 +139,10 @@ public class ForgotActivity extends AppCompatActivity {
             etUsername.setError("Enter username");
             return false;
         }
+        if (!username.matches("[a-zA-Z0-9]+")) {
+            etUsername.setError("Username must contain only letters and numbers");
+            return false;
+        }
         if (TextUtils.isEmpty(password)) {
             etPassword.setError("Enter new password");
             return false;
@@ -151,8 +155,8 @@ public class ForgotActivity extends AppCompatActivity {
             etConfirmPassword.setError("Passwords do not match");
             return false;
         }
-        if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            etPassword.setError("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
             return false;
         }
         return true;
@@ -169,7 +173,6 @@ public class ForgotActivity extends AppCompatActivity {
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Hashing error: " + e.getMessage());
-            Toast.makeText(this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
             return null;
         }
     }

@@ -37,8 +37,9 @@ public class SignInActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private ImageView showPassBtn;
     private ProgressBar progressBar;
-    private DatabaseReference database;
     private Button btnLogin;
+
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +47,10 @@ public class SignInActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signin);  // Set content view first
 
-        // Initialize UI components after the layout is set
+        // Initialize UI components
         initializeUIComponents();
 
-        // Check if already logged in
+        // Check if the user is already logged in
         if (isLoggedIn()) {
             navigateToMainActivity();
             return;
@@ -63,9 +64,8 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void initializeUIComponents() {
-        // Initialize all UI components
-        etUsername = findViewById(R.id.etUsername);  // Ensure this is after setContentView()
-        etPassword = findViewById(R.id.etPassword);  // Ensure this is after setContentView()
+        etUsername = findViewById(R.id.etUsername);
+        etPassword = findViewById(R.id.etPassword);
         showPassBtn = findViewById(R.id.show_pass_btn);
         progressBar = findViewById(R.id.progressBar);
         btnLogin = findViewById(R.id.btnLogin);
@@ -153,6 +153,10 @@ public class SignInActivity extends AppCompatActivity {
     private boolean validateInput(String username, String password) {
         if (TextUtils.isEmpty(username)) {
             etUsername.setError("Enter username");
+            return false;
+        }
+        if (!username.matches("[a-zA-Z0-9]+")) {
+            etUsername.setError("Username must contain only letters and numbers");
             return false;
         }
         if (TextUtils.isEmpty(password)) {
