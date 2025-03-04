@@ -128,5 +128,4 @@
         android:textSize="16sp"
         android:textStyle="bold"
         tools:ignore="HardcodedText" />
-
 </RelativeLayout>

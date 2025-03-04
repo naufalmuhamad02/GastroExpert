@@ -22,7 +22,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintVertical_bias="0.25"
+        tools:ignore="HardcodedText" />
 
     <!-- Username Input -->
     <EditText
@@ -32,8 +33,9 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="36dp"
         android:layout_marginEnd="32dp"
+        android:autofillHints="username"
         android:background="@drawable/input_bg"
-        android:drawableLeft="@drawable/ic_person"
+        android:drawableStart="@drawable/ic_person"
         android:drawablePadding="10dp"
         android:ems="10"
         android:hint="Username"
@@ -46,7 +48,8 @@
         android:textColorHint="@color/Black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo" />
+        app:layout_constraintTop_toBottomOf="@+id/logo"
+        tools:ignore="HardcodedText" />
 
     <!-- Email Input -->
     <EditText
@@ -54,8 +57,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:autofillHints="emailAddress"
         android:background="@drawable/input_bg"
-        android:drawableLeft="@drawable/baseline_email_24"
+        android:drawableStart="@drawable/baseline_email_24"
         android:drawablePadding="10dp"
         android:ems="10"
         android:hint="Email"
@@ -68,7 +72,8 @@
         android:textColorHint="@color/Black"
         app:layout_constraintEnd_toEndOf="@+id/etUsername"
         app:layout_constraintStart_toStartOf="@+id/etUsername"
-        app:layout_constraintTop_toBottomOf="@+id/etUsername" />
+        app:layout_constraintTop_toBottomOf="@+id/etUsername"
+        tools:ignore="HardcodedText" />
 
     <!-- Password Input -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -84,8 +89,9 @@
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:autofillHints="password"
             android:background="@drawable/input_bg"
-            android:drawableLeft="@drawable/key"
+            android:drawableStart="@drawable/key"
             android:drawablePadding="10dp"
             android:ems="10"
             android:hint="Password"
@@ -98,7 +104,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
 
         <ImageView
             android:id="@+id/show_pass_btn"
@@ -106,12 +113,13 @@
             android:layout_height="32dp"
             android:layout_marginEnd="8dp"
             android:alpha=".5"
+            android:contentDescription="Hide Pass"
             android:padding="5dp"
             android:src="@drawable/eye_pass"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="OnClick" />
+            tools:ignore="HardcodedText,OnClick" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Confirm Password Input -->
@@ -128,8 +136,9 @@
             android:id="@+id/etConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:autofillHints="password"
             android:background="@drawable/input_bg"
-            android:drawableLeft="@drawable/key"
+            android:drawableStart="@drawable/key"
             android:drawablePadding="10dp"
             android:ems="10"
             android:hint="Konfirmasi Password"
@@ -142,7 +151,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
 
         <ImageView
             android:id="@+id/show_confirm_pass_btn"
@@ -150,12 +160,13 @@
             android:layout_height="32dp"
             android:layout_marginEnd="8dp"
             android:alpha=".5"
+            android:contentDescription="Hide Pass"
             android:padding="5dp"
             android:src="@drawable/eye_pass"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="OnClick" />
+            tools:ignore="HardcodedText,OnClick" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Register Button -->
@@ -172,7 +183,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layconfirm" />
+        app:layout_constraintTop_toBottomOf="@+id/layconfirm"
+        tools:ignore="HardcodedText" />
 
     <!-- Login Text -->
     <TextView
@@ -180,14 +192,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginEnd="30dp"
         android:shadowColor="@color/Blue"
         android:text="Sudah Memiliki Akun?"
         android:textColor="@color/Black"
         app:layout_constraintEnd_toEndOf="@+id/btnRegister"
         app:layout_constraintHorizontal_bias="0.43"
         app:layout_constraintStart_toStartOf="@+id/btnRegister"
-        app:layout_constraintTop_toBottomOf="@+id/btnRegister" />
+        app:layout_constraintTop_toBottomOf="@+id/btnRegister"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/memilikiAkun"
@@ -200,7 +213,8 @@
         android:textStyle="bold"
         android:textColor="@color/Blue"
         app:layout_constraintStart_toEndOf="@+id/have"
-        app:layout_constraintTop_toBottomOf="@+id/btnRegister" />
+        app:layout_constraintTop_toBottomOf="@+id/btnRegister"
+        tools:ignore="HardcodedText" />
 
     <!-- Main Image -->
     <ImageView
@@ -210,12 +224,14 @@
         android:layout_marginStart="150dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="150dp"
+        android:contentDescription="Logo"
         app:layout_constraintBottom_toTopOf="@+id/logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.41"
-        app:srcCompat="@drawable/gastro_vector" />
+        app:srcCompat="@drawable/gastro_vector"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/copyright"
@@ -232,7 +248,8 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
 
     <ProgressBar
         android:id="@+id/progressBar"

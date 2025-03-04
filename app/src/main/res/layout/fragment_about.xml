@@ -17,7 +17,8 @@
         android:textAlignment="center"
         android:textColor="@color/Black"
         android:textSize="24sp"
-        android:fontFamily="sans-serif-medium" />
+        android:fontFamily="sans-serif-medium"
+        tools:ignore="HardcodedText" />
 
     <ImageView
         android:id="@+id/imageView2"
@@ -27,7 +28,9 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        app:srcCompat="@drawable/gastro_vector" />
+        android:contentDescription="Logo GastroExpert"
+        app:srcCompat="@drawable/gastro_vector"
+        tools:ignore="HardcodedText" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
@@ -59,8 +62,10 @@
         android:layout_height="189dp"
         android:layout_below="@id/cardView"
         android:layout_marginTop="32dp"
+        android:contentDescription="Hide Welcome"
         android:src="@drawable/gastro_image"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/copyright"
@@ -72,5 +77,6 @@
         android:fontFamily="sans-serif-light"
         android:text="GastroExpert 2024 © Muhamad Naufal. All Right Reserved."
         android:textColor="@color/Black"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:ignore="HardcodedText" />
 </RelativeLayout>
