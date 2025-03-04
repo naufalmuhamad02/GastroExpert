@@ -10,7 +10,6 @@ import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import com.example.gastroexpert.R;
 
@@ -25,7 +24,7 @@ public class AboutFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_about, container, false);
 
         ImageView imageView = view.findViewById(R.id.imageView);
-        CardView cardView = view.findViewById(R.id.cardView);
+        RelativeLayout cardView = view.findViewById(R.id.cardView);
 
         if (imageView == null || cardView == null) {
             Log.e(TAG, "Error: ImageView or CardView not found in layout");
@@ -37,10 +36,11 @@ public class AboutFragment extends Fragment {
         return view;
     }
 
-    private void adjustUIForScreenSize(ImageView imageView, CardView cardView) {
+    private void adjustUIForScreenSize(ImageView imageView, RelativeLayout cardView) {
         int screenHeightDp = getScreenHeightInDp();
         Log.d(TAG, "Screen height in DP: " + screenHeightDp);
 
+        // Adjust layout based on screen height
         if (screenHeightDp > SCREEN_HEIGHT_THRESHOLD_DP) {
             imageView.setVisibility(View.VISIBLE);
             adjustCardViewMargins(cardView, dpToPx(LARGE_SCREEN_MARGIN_TOP_DP), 0, 0, 0);
@@ -53,7 +53,7 @@ public class AboutFragment extends Fragment {
         Log.d(TAG, "ImageView visibility: " + (imageView.getVisibility() == View.VISIBLE ? "Visible" : "Gone"));
     }
 
-    private void adjustCardViewMargins(CardView cardView, int top, int bottom, int start, int end) {
+    private void adjustCardViewMargins(RelativeLayout cardView, int top, int bottom, int start, int end) {
         ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
 
         if (layoutParams instanceof RelativeLayout.LayoutParams) {

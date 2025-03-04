@@ -130,6 +130,7 @@ public class ForgotActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 handleDatabaseError(error);
+                progressBar.setVisibility(View.GONE); // Hide progress bar on failure
             }
         });
     }

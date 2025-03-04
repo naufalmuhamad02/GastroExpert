@@ -13,11 +13,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gastroexpert.R;
-import com.example.gastroexpert.databinding.ActivitySplashBinding;
-
 import java.util.Objects;
 
 @SuppressLint("CustomSplashScreen")
@@ -35,7 +32,7 @@ public class SplashActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         // Set content view using ViewBinding
-        com.example.gastroexpert.databinding.ActivitySplashBinding binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        com.example.gastroexpert.databinding.ActivitySplashBinding binding = com.example.gastroexpert.databinding.ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Hide the action bar for the splash screen
@@ -128,17 +125,5 @@ public class SplashActivity extends AppCompatActivity {
         super.onDestroy();
         // Remove any pending callbacks to prevent memory leaks
         handler.removeCallbacksAndMessages(null);
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save any necessary state here
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // Restore any necessary state here
     }
 }

@@ -65,7 +65,7 @@ public class ResultDiagnosisActivity extends AppCompatActivity {
 
         LinearLayout btnBeranda = findViewById(R.id.btnBeranda);
         LinearLayout btnDiagnosis = findViewById(R.id.btnDiagnosis);
-        TextView containerDataDiterima = findViewById(R.id.dataDeterima);
+        TextView containerDataDiterima = findViewById(R.id.dataDiterima);
         TextView tvNamaPenyakit = findViewById(R.id.hd);
         defenisiHeader = findViewById(R.id.defenisiHeader);
         solusiHeader = findViewById(R.id.solusiHeader);

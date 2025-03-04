@@ -45,7 +45,7 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_signin);  // Set content view first
+        setContentView(R.layout.activity_signin);
 
         // Initialize UI components
         initializeUIComponents();
@@ -72,7 +72,6 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Set up listeners for buttons
         btnLogin.setOnClickListener(view -> handleLogin());
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility());
         TextView forgotPassword = findViewById(R.id.forgotPassword);
@@ -82,42 +81,27 @@ public class SignInActivity extends AppCompatActivity {
         signUp.setOnClickListener(view -> navigateToSignUpActivity());
     }
 
-    /**
-     * Check if the user is already logged in using SharedPreferences.
-     */
     private boolean isLoggedIn() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getBoolean("isLoggedIn", false);
     }
 
-    /**
-     * Navigate to MainActivity after successful login.
-     */
     private void navigateToMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("username", etUsername.getText().toString().trim());  // Add username to the intent
+        intent.putExtra("username", etUsername.getText().toString().trim());
         startActivity(intent);
         finish();
     }
 
-    /**
-     * Navigate to ForgotPasswordActivity.
-     */
     private void navigateToForgotPasswordActivity() {
         startActivity(new Intent(this, ForgotActivity.class));
     }
 
-    /**
-     * Navigate to SignUpActivity.
-     */
     private void navigateToSignUpActivity() {
         startActivity(new Intent(this, SignUpActivity.class));
     }
 
-    /**
-     * Toggle the password visibility in the EditText.
-     */
     private void togglePasswordVisibility() {
         if (etPassword.getTransformationMethod() instanceof PasswordTransformationMethod) {
             etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
@@ -128,9 +112,6 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Handle the login process.
-     */
     private void handleLogin() {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
@@ -147,9 +128,6 @@ public class SignInActivity extends AppCompatActivity {
         queryUserInDatabase(username, hashedPassword);
     }
 
-    /**
-     * Validate the input fields for username and password.
-     */
     private boolean validateInput(String username, String password) {
         if (TextUtils.isEmpty(username)) {
             etUsername.setError("Enter username");
@@ -170,9 +148,6 @@ public class SignInActivity extends AppCompatActivity {
         return true;
     }
 
-    /**
-     * Hash the password using SHA-256.
-     */
     private String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -188,9 +163,6 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Query the Firebase database to check the credentials of the user.
-     */
     private void queryUserInDatabase(String username, String hashedPassword) {
         Query query = database.orderByChild("username").equalTo(username);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -228,9 +200,6 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Save the login status and username to SharedPreferences.
-     */
     private void saveLoginStatus(String username) {
         SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
         editor.putBoolean("isLoggedIn", true);
@@ -238,9 +207,6 @@ public class SignInActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    /**
-     * Show an error dialog in case of database issues.
-     */
     private void showErrorDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Error")

@@ -73,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if ("diagnosis".equals(navigateTo)) {
             navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
+        } else if ("disease".equals(navigateTo)) {
+            navigateToFragment(new DiseaseFragment(), username, R.id.nav_penyakit);
+        } else if ("history".equals(navigateTo)) {
+            navigateToFragment(new HistoryFragment(), username, R.id.nav_riwayat);
         } else {
             navigateToFragment(new HomeFragment(), username, R.id.nav_beranda);
         }
