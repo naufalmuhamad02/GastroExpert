@@ -149,8 +149,8 @@ public class ResultDiagnosisActivity extends AppCompatActivity {
 
         String coloredNamaPenyakit = "<font color='#007cfd' ><b>" + namaPenyakit + "</b></font>";
         String persen = "<font color='#007cfd' ><b>" + persentase + "</b></font>";
-
-        tvNamaPenyakit.setText(Html.fromHtml(username + " kemungkinan menderita " + coloredNamaPenyakit + " dengan tingkat kepastian " + persen + "%"));
+        String colorUsername = "<font color='#007cfd' ><b>" + username + "</b></font>";
+        tvNamaPenyakit.setText(Html.fromHtml(colorUsername + " kemungkinan menderita " + coloredNamaPenyakit + " dengan tingkat kepastian " + persen + "%"));
 
         cursor_hasil.close();
 

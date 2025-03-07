@@ -72,8 +72,9 @@ public class ReviewActivity extends AppCompatActivity {
 
         String coloredNamaPenyakit = "<font color='#007cfd' ><b>" + penyakit + "</b></font>";
         String persen = "<font color='#007cfd' ><b>" + persentase + "</b></font>";
+        String colorUsername = "<font color='#007cfd' ><b>" + username + "</b></font>";
 
-        tvNamaPenyakit.setText(Html.fromHtml(username + " kemungkinan menderita " + coloredNamaPenyakit + " dengan tingkat kepastian " + persen + "%"));
+        tvNamaPenyakit.setText(Html.fromHtml(colorUsername + " kemungkinan menderita " + coloredNamaPenyakit + " dengan tingkat kepastian " + persen + "%"));
 
         DatabaseReference penyakitRef = FirebaseDatabase.getInstance().getReference("penyakit");
         penyakitRef.addListenerForSingleValueEvent(new ValueEventListener() {
