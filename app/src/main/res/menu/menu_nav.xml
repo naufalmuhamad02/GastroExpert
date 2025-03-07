@@ -6,32 +6,38 @@
         android:checkableBehavior="single">
         <item
             android:id="@+id/nav_beranda"
-            android:icon="@drawable/nav_home"
-            android:title="Beranda"/>
+            android:icon="@drawable/home_icon"
+            android:title="Beranda"
+            tools:ignore="HardcodedText" />
         <item
             android:id="@+id/nav_penyakit"
-            android:icon="@drawable/diasease"
-            android:title="Penyakit"/>
+            android:icon="@drawable/disease_icon"
+            android:title="Penyakit"
+            tools:ignore="HardcodedText" />
         <item
             android:id="@+id/nav_diagnosis"
-            android:icon="@drawable/diagnosis"
-            android:title="Diagnosis"/>
+            android:icon="@drawable/diagnosis_icon"
+            android:title="Diagnosis"
+            tools:ignore="HardcodedText" />
         <item
             android:id="@+id/nav_riwayat"
-            android:icon="@drawable/history"
-            android:title="Riwayat"/>
+            android:icon="@drawable/history_icon"
+            android:title="Riwayat"
+            tools:ignore="HardcodedText" />
         <item
             android:id="@+id/nav_tentang"
-            android:icon="@drawable/nav_about"
-            android:title="Tentang"/>
+            android:icon="@drawable/about_icon"
+            android:title="Tentang"
+            tools:ignore="HardcodedText" />
     </group>
     <item
         android:title="@string/app_name">
         <menu>
             <item
                 android:id="@+id/nav_logout"
-                android:icon="@drawable/nav_logout"
-                android:title="Keluar"/>
+                android:icon="@drawable/logout_icon"
+                android:title="Keluar"
+                tools:ignore="HardcodedText" />
         </menu>
     </item>
 

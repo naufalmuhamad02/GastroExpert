@@ -72,6 +72,4 @@ dependencies {
 
     //8. Bcrypt
     implementation(libs.jbcrypt)
-
-
 }

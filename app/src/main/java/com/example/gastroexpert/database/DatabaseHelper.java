@@ -16,7 +16,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "baseknowledge.db";
     private static String DB_PATH = "";
     private static final int DB_VERSION = 1;
-
     private SQLiteDatabase sqLiteDatabase;
     private final Context ctx;
 
@@ -80,7 +79,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {}
+    public void onCreate(SQLiteDatabase db) {
+
+    }
 
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
