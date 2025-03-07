@@ -71,15 +71,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void handleFragmentNavigation() {
         String navigateTo = getIntent().getStringExtra("navigateTo");
 
-        if ("diagnosis".equals(navigateTo)) {
-            navigateToFragment(new DiagnosisFragment(), username, R.id.nav_diagnosis);
-        } else if ("disease".equals(navigateTo)) {
-            navigateToFragment(new DiseaseFragment(), username, R.id.nav_penyakit);
-        } else if ("history".equals(navigateTo)) {
-            navigateToFragment(new HistoryFragment(), username, R.id.nav_riwayat);
-        } else {
-            navigateToFragment(new HomeFragment(), username, R.id.nav_beranda);
+        if (navigateTo == null) {
+            navigateTo = "home";  // Default to home if no data is passed
         }
+
+        Fragment fragment;
+        int menuItemId;
+
+        switch (navigateTo) {
+            case "diagnosis":
+                fragment = new DiagnosisFragment();
+                menuItemId = R.id.nav_diagnosis;
+                break;
+            case "disease":
+                fragment = new DiseaseFragment();
+                menuItemId = R.id.nav_penyakit;
+                break;
+            case "history":
+                fragment = new HistoryFragment();
+                menuItemId = R.id.nav_riwayat;
+                break;
+            case "home":
+            default:
+                fragment = new HomeFragment();
+                menuItemId = R.id.nav_beranda;
+                break;
+        }
+
+        navigateToFragment(fragment, username, menuItemId);
     }
 
     private void navigateToFragment(Fragment fragment, String username, int menuItemId) {

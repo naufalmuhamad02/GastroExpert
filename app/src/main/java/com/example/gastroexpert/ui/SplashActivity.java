@@ -12,9 +12,11 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gastroexpert.R;
+import com.example.gastroexpert.databinding.ActivitySplashBinding;
 import java.util.Objects;
 
 @SuppressLint("CustomSplashScreen")
@@ -27,19 +29,16 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        // Set content view using ViewBinding
+        ActivitySplashBinding binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         // Enable full-screen mode
-        EdgeToEdge.enable(this);
-
-        // Set content view using ViewBinding
-        com.example.gastroexpert.databinding.ActivitySplashBinding binding = com.example.gastroexpert.databinding.ActivitySplashBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        enableFullScreenMode();
 
         // Hide the action bar for the splash screen
         hideActionBar();
-
-        // Enable full-screen mode for devices running Android 10 (API level 29) or higher
-        enableFullScreenMode();
 
         // Load and start the fade-in animation for the logo
         loadFadeInAnimation(binding.logo);

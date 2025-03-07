@@ -6,10 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import com.example.gastroexpert.R;
 
@@ -24,7 +23,8 @@ public class AboutFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_about, container, false);
 
         ImageView imageView = view.findViewById(R.id.imageView);
-        RelativeLayout cardView = view.findViewById(R.id.cardView);
+        // Fix casting issue: CardView instead of RelativeLayout
+        CardView cardView = view.findViewById(R.id.cardView);
 
         if (imageView == null || cardView == null) {
             Log.e(TAG, "Error: ImageView or CardView not found in layout");
@@ -36,7 +36,7 @@ public class AboutFragment extends Fragment {
         return view;
     }
 
-    private void adjustUIForScreenSize(ImageView imageView, RelativeLayout cardView) {
+    private void adjustUIForScreenSize(ImageView imageView, CardView cardView) {
         int screenHeightDp = getScreenHeightInDp();
         Log.d(TAG, "Screen height in DP: " + screenHeightDp);
 
@@ -53,19 +53,15 @@ public class AboutFragment extends Fragment {
         Log.d(TAG, "ImageView visibility: " + (imageView.getVisibility() == View.VISIBLE ? "Visible" : "Gone"));
     }
 
-    private void adjustCardViewMargins(RelativeLayout cardView, int top, int bottom, int start, int end) {
+    private void adjustCardViewMargins(CardView cardView, int top, int bottom, int start, int end) {
         ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
 
-        if (layoutParams instanceof RelativeLayout.LayoutParams) {
-            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) layoutParams;
-            relativeLayoutParams.setMargins(start, top, end, bottom);
-            cardView.setLayoutParams(relativeLayoutParams);
-        } else if (layoutParams instanceof LinearLayout.LayoutParams) {
-            LinearLayout.LayoutParams linearLayoutParams = (LinearLayout.LayoutParams) layoutParams;
-            linearLayoutParams.setMargins(start, top, end, bottom);
-            cardView.setLayoutParams(linearLayoutParams);
+        if (layoutParams instanceof CardView.LayoutParams) {
+            CardView.LayoutParams cardViewLayoutParams = (CardView.LayoutParams) layoutParams;
+            cardViewLayoutParams.setMargins(start, top, end, bottom);
+            cardView.setLayoutParams(cardViewLayoutParams);
         } else {
-            Log.e(TAG, "Error: CardView's parent layout is not a RelativeLayout or LinearLayout");
+            Log.e(TAG, "Error: CardView's parent layout is not a CardView or LinearLayout");
         }
     }
 

@@ -13,12 +13,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gastroexpert.R;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -118,9 +118,8 @@ public class SignInActivity extends AppCompatActivity {
 
         if (!validateInput(username, password)) return;
 
-        // Disable the login button and show progress
-        btnLogin.setEnabled(false);
-        progressBar.setVisibility(View.VISIBLE);
+        // Disable UI elements during login
+        disableUI();
 
         String hashedPassword = hashPassword(password);
 
@@ -178,22 +177,20 @@ public class SignInActivity extends AppCompatActivity {
                 }
 
                 // Hide progress bar and enable login button
-                progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
+                enableUI();
 
                 if (isValid) {
                     saveLoginStatus(username);
-                    Toast.makeText(SignInActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                    showSnackbar("Login successful");
                     navigateToMainActivity();
                 } else {
-                    Toast.makeText(SignInActivity.this, "Username/password incorrect", Toast.LENGTH_SHORT).show();
+                    showSnackbar("Username/password incorrect");
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                progressBar.setVisibility(View.GONE);
-                btnLogin.setEnabled(true);
+                enableUI();
                 showErrorDialog();
                 Log.e(TAG, "Database error: " + error.getMessage());
             }
@@ -213,5 +210,23 @@ public class SignInActivity extends AppCompatActivity {
                 .setMessage("There was a connection issue. Please try again later.")
                 .setPositiveButton("OK", null)
                 .show();
+    }
+
+    private void disableUI() {
+        etUsername.setEnabled(false);
+        etPassword.setEnabled(false);
+        btnLogin.setEnabled(false);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void enableUI() {
+        etUsername.setEnabled(true);
+        etPassword.setEnabled(true);
+        btnLogin.setEnabled(true);
+        progressBar.setVisibility(View.GONE);
+    }
+
+    private void showSnackbar(String message) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
     }
 }

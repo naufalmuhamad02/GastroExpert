@@ -3,19 +3,18 @@ package com.example.gastroexpert.ui;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.gastroexpert.R;
@@ -24,53 +23,64 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DiseaseFragment extends Fragment {
 
     private static final String TAG = "DiseaseFragment";
-    private LinearLayout cardContainer;
     private ProgressBar progressBar;
+    private DiseaseAdapter diseaseAdapter;
+    private List<Disease> diseaseList;
 
-    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_disease, container, false);
 
-        // Initialize card container and progress bar
-        cardContainer = view.findViewById(R.id.cardContainer);
+        // Initialize RecyclerView and progress bar
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         progressBar = view.findViewById(R.id.progressBar);
 
-        // Clear any pre-existing views
-        cardContainer.removeAllViews();
+        // Initialize list and adapter
+        diseaseList = new ArrayList<>();
+        diseaseAdapter = new DiseaseAdapter(diseaseList);
+
+        // Set up RecyclerView with layout manager
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.setAdapter(diseaseAdapter);
+        recyclerView.setHasFixedSize(true); // Optimization for fixed-size list
 
         // Show loading indicator while fetching data
         progressBar.setVisibility(View.VISIBLE);
-
-        // Title for the fragment
-        TextView titleTextView = createTitleTextView();
-        cardContainer.addView(titleTextView);
 
         // Get Firebase reference for diseases
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("penyakit");
 
         // Fetch data from Firebase
         databaseReference.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Hide loading indicator when data is fetched
                 progressBar.setVisibility(View.GONE);
+
+                // Clear previous data and reload new data
+                diseaseList.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     // Extract disease name and image URL
                     String namaPenyakit = snapshot.child("nama_penyakit").getValue(String.class);
                     String imageURL = snapshot.child("imageURL").getValue(String.class);
 
-                    // If imageURL exists, load the card view
+                    // If imageURL exists, add the disease to the list
                     if (namaPenyakit != null && imageURL != null && !imageURL.isEmpty()) {
-                        createCardView(namaPenyakit, imageURL);
+                        diseaseList.add(new Disease(namaPenyakit, imageURL));
                     }
                 }
+
+                // Notify adapter about data changes
+                diseaseAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -85,96 +95,71 @@ public class DiseaseFragment extends Fragment {
         return view;
     }
 
-    /**
-     * Creates a CardView for a disease and adds it to the container.
-     *
-     * @param diseaseName the name of the disease
-     * @param imageURL    the URL of the disease's image
-     */
-    private void createCardView(String diseaseName, String imageURL) {
-        // Create CardView
-        CardView cardView = new CardView(requireContext());
-        LinearLayout.LayoutParams cardLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        cardLayoutParams.setMargins(50, 0, 50, 50); // Set margin for CardView
-        cardView.setLayoutParams(cardLayoutParams);
-        cardView.setRadius(15);
-        cardView.setCardElevation(4);
+    private static class Disease {
+        private final String name;
+        private final String imageURL;
 
-        // Linear Layout for content inside CardView
-        LinearLayout layout = new LinearLayout(requireContext());
-        layout.setOrientation(LinearLayout.VERTICAL);
+        public Disease(String name, String imageURL) {
+            this.name = name;
+            this.imageURL = imageURL;
+        }
 
-        // ImageView inside the CardView
-        ImageView imageView = createImageView(imageURL);
+        public String getName() {
+            return name;
+        }
 
-        layout.addView(imageView);
-
-        // TextView for disease name
-        TextView textView = createDiseaseNameTextView(diseaseName);
-        layout.addView(textView);
-
-        // Add layout to CardView
-        cardView.addView(layout);
-
-        // Finally, add the CardView to the container
-        cardContainer.addView(cardView);
+        public String getImageURL() {
+            return imageURL;
+        }
     }
 
-    private ImageView createImageView(String imageURL) {
-        ImageView imageView = new ImageView(requireContext());
-        int heightInDp = 180;
-        int heightInPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, heightInDp, getResources().getDisplayMetrics());
-        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                heightInPx
-        );
-        imageView.setLayoutParams(imageParams);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    private static class DiseaseAdapter extends RecyclerView.Adapter<DiseaseAdapter.DiseaseViewHolder> {
 
-        // Load image using Glide with error handling
-        Glide.with(requireContext())
-                .load(imageURL)
-                .apply(new RequestOptions().placeholder(R.drawable.gastro_image))  // Placeholder image
-                .error(R.drawable.gastro_image) // Error image if Glide fails
-                .onlyRetrieveFromCache(false) // Prevent caching issues
-                .into(imageView);
+        private final List<Disease> diseaseList;
 
-        return imageView;
-    }
+        public DiseaseAdapter(List<Disease> diseaseList) {
+            this.diseaseList = diseaseList;
+        }
 
-    private TextView createDiseaseNameTextView(String diseaseName) {
-        TextView textView = new TextView(requireContext());
-        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        textParams.setMargins(12, 12, 0, 15); // Set margin for text
-        textView.setLayoutParams(textParams);
-        textView.setText(diseaseName);
-        textView.setTextSize(20);
-        textView.setTextColor(getResources().getColor(R.color.Black));
-        return textView;
-    }
+        @NonNull
+        @Override
+        public DiseaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_disease, parent, false);
+            return new DiseaseViewHolder(view);
+        }
 
-    /**
-     * Create title for the fragment.
-     */
-    @SuppressLint("SetTextI18n")
-    private TextView createTitleTextView() {
-        TextView titleTextView = new TextView(requireContext());
-        LinearLayout.LayoutParams titleLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        titleLayoutParams.setMargins(0, 80, 0, 100); // Set margin
-        titleTextView.setLayoutParams(titleLayoutParams);
-        titleTextView.setText("Daftar Penyakit");
-        titleTextView.setTextSize(24);
-        titleTextView.setTextColor(getResources().getColor(R.color.Black));
-        titleTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        return titleTextView;
+        @Override
+        public void onBindViewHolder(@NonNull DiseaseViewHolder holder, int position) {
+            Disease disease = diseaseList.get(position);
+            holder.bind(disease);
+        }
+
+        @Override
+        public int getItemCount() {
+            return diseaseList.size();
+        }
+
+        public static class DiseaseViewHolder extends RecyclerView.ViewHolder {
+
+            private final TextView diseaseNameTextView;
+            private final ImageView diseaseImageView;
+
+            public DiseaseViewHolder(View itemView) {
+                super(itemView);
+                diseaseNameTextView = itemView.findViewById(R.id.diseaseName);
+                diseaseImageView = itemView.findViewById(R.id.diseaseImage);
+            }
+
+            public void bind(Disease disease) {
+                diseaseNameTextView.setText(disease.getName());
+
+                // Load image using Glide with error handling
+                Glide.with(itemView.getContext())
+                        .load(disease.getImageURL())
+                        .apply(new RequestOptions().placeholder(R.drawable.gastro_image))  // Placeholder image
+                        .error(R.drawable.gastro_image) // Error image if Glide fails
+                        .into(diseaseImageView);
+            }
+        }
     }
 }

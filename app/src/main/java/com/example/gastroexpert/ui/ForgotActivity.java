@@ -24,6 +24,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -43,14 +44,11 @@ public class ForgotActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_forgot);
 
-        // Initialize UI components
         initializeUIComponents();
+        setupListeners();
 
         // Initialize Firebase database reference
         database = FirebaseDatabase.getInstance().getReference("users");
-
-        // Set up listeners for buttons
-        setupListeners();
     }
 
     private void initializeUIComponents() {
@@ -66,11 +64,9 @@ public class ForgotActivity extends AppCompatActivity {
         Button btnChangePassword = findViewById(R.id.btnGanti);
         TextView tvLogin = findViewById(R.id.ingat);
 
-        // Listener for changing password
         btnChangePassword.setOnClickListener(view -> handleChangePassword());
         tvLogin.setOnClickListener(view -> navigateToSignInActivity());
 
-        // Show/hide password and confirm password
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility(etPassword, showPassBtn));
         showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(etConfirmPassword, showConfirmPassBtn));
     }
@@ -97,7 +93,6 @@ public class ForgotActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        // Validate input fields
         if (!validateInput(username, password, confirmPassword)) {
             return;
         }
@@ -115,7 +110,6 @@ public class ForgotActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Hash the new password
                 String hashedPassword = hashPassword(password);
                 if (hashedPassword == null) {
                     Toast.makeText(ForgotActivity.this, "Failed to encrypt password. Please try again.", Toast.LENGTH_SHORT).show();
@@ -130,7 +124,7 @@ public class ForgotActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 handleDatabaseError(error);
-                progressBar.setVisibility(View.GONE); // Hide progress bar on failure
+                progressBar.setVisibility(View.GONE);
             }
         });
     }

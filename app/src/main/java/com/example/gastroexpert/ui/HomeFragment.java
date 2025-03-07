@@ -58,7 +58,7 @@ public class HomeFragment extends Fragment {
      */
     private void displayUsername(String username) {
         if (nameTextView != null) {
-            nameTextView.setText(username);
+            nameTextView.setText(username != null ? username : "Guest");
         } else {
             Log.e(TAG, "nameTextView is null");
         }
@@ -99,7 +99,7 @@ public class HomeFragment extends Fragment {
         SharedPreferences.Editor editor = requireActivity()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit();
-        editor.clear();
+        editor.remove("username");  // Clear only the session-related data
         editor.putBoolean("isLoggedIn", false);
         editor.apply();
     }

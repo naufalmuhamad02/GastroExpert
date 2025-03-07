@@ -53,7 +53,6 @@ public class SignUpActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_up);
 
-        // Check if user is already logged in
         if (isLoggedIn()) {
             navigateToMainActivity();
             return;
@@ -80,69 +79,15 @@ public class SignUpActivity extends AppCompatActivity {
         Button btnRegister = findViewById(R.id.btnRegister);
         TextView tvHaveAccount = findViewById(R.id.memilikiAkun);
 
-        // Listener for navigating to login page
         tvHaveAccount.setOnClickListener(view -> navigateToSignInActivity());
-
-        // Listener for showing/hiding password
         showPassBtn.setOnClickListener(view -> togglePasswordVisibility(etPassword, showPassBtn));
-
-        // Listener for showing/hiding confirm password
         showConfirmPassBtn.setOnClickListener(view -> togglePasswordVisibility(etConfirmPassword, showConfirmPassBtn));
 
-        // Text watchers for real-time validation
-        etUsername.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        etUsername.addTextChangedListener(createTextWatcher(this::validateUsername));
+        etEmail.addTextChangedListener(createTextWatcher(this::validateEmail));
+        etPassword.addTextChangedListener(createTextWatcher(this::validatePassword));
+        etConfirmPassword.addTextChangedListener(createTextWatcher(this::validateConfirmPassword));
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateUsername();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        etEmail.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateEmail();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        etPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validatePassword();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        etConfirmPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateConfirmPassword();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        // Listener for register button
         btnRegister.setOnClickListener(view -> handleRegistration());
     }
 
@@ -159,8 +104,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void navigateToSignInActivity() {
-        Intent intent = new Intent(this, SignInActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, SignInActivity.class));
     }
 
     private void togglePasswordVisibility(EditText editText, ImageView imageView) {
@@ -173,6 +117,16 @@ public class SignUpActivity extends AppCompatActivity {
             imageView.setImageResource(R.drawable.eye_pass);
         }
         editText.setSelection(selection);
+    }
+
+    private TextWatcher createTextWatcher(Runnable validateMethod) {
+        return new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateMethod.run();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        };
     }
 
     private void validateUsername() {
@@ -203,22 +157,15 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void validatePassword() {
         String password = etPassword.getText().toString().trim();
-        String username = etUsername.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
         String passwordRegex = "^(?=.*\\d)[\\w\\W]*$";
-
         if (password.isEmpty()) {
             etPassword.setError("Enter password");
         } else if (password.length() < MIN_PASSWORD_LENGTH) {
             etPassword.setError("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
         } else if (password.length() >= MAX_PASSWORD_LENGTH) {
             etPassword.setError("Password must be less than " + MAX_PASSWORD_LENGTH + " characters");
-        } else if (password.equals(username)) {
-            etPassword.setError("Password cannot be the same as username");
         } else if (!password.matches(passwordRegex)) {
             etPassword.setError("Password must contain at least one number");
-        } else if (password.equals(email)) {
-            etPassword.setError("Password cannot be the same as email");
         } else {
             etPassword.setError(null);
         }
@@ -248,19 +195,15 @@ public class SignUpActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        if (!validateInput(username, email, password, confirmPassword)) {
-            return;
-        }
+        if (!validateInput(username, email, password, confirmPassword)) return;
 
         progressBar.setVisibility(View.VISIBLE);
 
-        // Check if username or email is already taken
         Query usernameQuery = database.orderByChild("username").equalTo(username);
         Query emailQuery = database.orderByChild("email").equalTo(email);
 
         usernameQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     etUsername.setError("Username already taken");
                     progressBar.setVisibility(View.GONE);
@@ -268,8 +211,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
 
                 emailQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             etEmail.setError("Email already taken");
                             progressBar.setVisibility(View.GONE);
@@ -277,19 +219,15 @@ public class SignUpActivity extends AppCompatActivity {
                         }
 
                         String hashedPassword = hashPassword(password);
-
                         saveUserData(username, email, hashedPassword);
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                    @Override public void onCancelled(@NonNull DatabaseError error) {
                         handleDatabaseError(error);
                     }
                 });
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            @Override public void onCancelled(@NonNull DatabaseError error) {
                 handleDatabaseError(error);
             }
         });
@@ -343,27 +281,18 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Hash the password using SHA-256.
-     */
     private String hashPassword(String password) {
         try {
-            // Create a MessageDigest instance for SHA-256
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-
-            // Perform the hash calculation
             byte[] hashBytes = md.digest(password.getBytes());
-
-            // Convert the byte array to a hexadecimal string
             StringBuilder sb = new StringBuilder();
             for (byte b : hashBytes) {
-                sb.append(String.format("%02x", b)); // Convert each byte to a 2-digit hex value
+                sb.append(String.format("%02x", b));
             }
-
-            return sb.toString();  // Return the hashed password as a hexadecimal string
+            return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Hashing error", e);
-            return "";  // Return an empty string in case of an error
+            return "";
         }
     }
 

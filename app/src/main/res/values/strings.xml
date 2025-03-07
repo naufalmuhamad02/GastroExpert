@@ -4,4 +4,5 @@
     <string name="open_nav">Open Navigation Drawer</string>
     <string name="close_nav">Close Navigation Drawer</string>
     <string name="About"> Gastro Expert adalah sebuah aplikasi sistem pakar yang dirancang khusus untuk membantu pengguna dalam mendiagnosis penyakit gangguan pencernaan pada manusia. Dengan memanfaatkan metode Forward Chaining, aplikasi ini memberikan analisis yang cepat dan akurat mengenai kondisi kesehatan pencernaan Anda. Gastro Expert dapat diakses dengan mudah melalui platform Android, sehingga pengguna dapat melakukan diagnosis kapan saja dan di mana saja.</string>
+    <string name="disease_image_desc">List item penyakit</string>
 </resources>
