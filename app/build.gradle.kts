@@ -72,4 +72,7 @@ dependencies {
 
     //8. Bcrypt
     implementation(libs.jbcrypt)
+
+    //9. Image Slideshow
+    implementation(libs.imageslideshow)
 }

@@ -66,7 +66,7 @@
         android:layout_marginHorizontal="60dp"
         android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
-        android:background="@drawable/btn_bgdark"
+        android:backgroundTint="@color/Black"
         android:textColor="@android:color/white"
         tools:ignore="HardcodedText" />
 

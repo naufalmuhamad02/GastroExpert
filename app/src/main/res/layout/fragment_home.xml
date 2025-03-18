@@ -8,7 +8,7 @@
     android:id="@+id/home"
     tools:context="ui.HomeFragment">
 
-    <ImageView
+    <androidx.cardview.widget.CardView
         android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="200dp"
@@ -18,11 +18,22 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="220dp"
         android:clipToOutline="true"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
         android:contentDescription="Home Profile"
         android:scaleType="centerCrop"
-        android:src="@drawable/welcome"
         tools:targetApi="s"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText">
+
+        <com.denzcoskun.imageslider.ImageSlider
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/imageSlider"
+            app:iss_period="1000"
+            app:iss_auto_cycle="true"
+            app:iss_delay="1000"
+            app:iss_corner_radius="20"/>
+    </androidx.cardview.widget.CardView>
 
     <ImageView
         android:id="@+id/profile_image_view"

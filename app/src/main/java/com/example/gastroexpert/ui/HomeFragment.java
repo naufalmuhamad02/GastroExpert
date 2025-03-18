@@ -12,9 +12,13 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import com.denzcoskun.imageslider.ImageSlider;
+import com.denzcoskun.imageslider.constants.ScaleTypes;
+import com.denzcoskun.imageslider.models.SlideModel;
 import com.example.gastroexpert.R;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -22,6 +26,9 @@ public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
     private static final String PREFS_NAME = "MyPrefs";
+    private static final String KEY_USERNAME = "username";
+    private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
+
     private TextView nameTextView;
     private TextView dateTextView;
 
@@ -29,32 +36,32 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Initialize UI components
+        // Inisialisasi komponen UI
         nameTextView = view.findViewById(R.id.name);
         dateTextView = view.findViewById(R.id.tanggal);
 
-        // Retrieve the username from SharedPreferences or fallback to "Guest"
+        // Ambil username dari SharedPreferences atau gunakan "Guest" sebagai default
         String username = getUsernameFromPreferences();
-
-        // Display username and current date
         displayUsername(username);
         displayCurrentDate();
+
+        // Konfigurasi ImageSlider dengan daftar slide
+        setupImageSlider(view);
 
         return view;
     }
 
     /**
-     * Retrieve the username from SharedPreferences or fallback to "Guest".
+     * Mengambil username dari SharedPreferences.
+     * Mengembalikan "Guest" jika tidak ditemukan.
      */
     private String getUsernameFromPreferences() {
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString("username", "Guest"); // Default to "Guest" if not found
+        return prefs.getString(KEY_USERNAME, "Guest");
     }
 
     /**
-     * Display the username in the TextView.
-     *
-     * @param username The username to display.
+     * Menampilkan username pada TextView.
      */
     private void displayUsername(String username) {
         if (nameTextView != null) {
@@ -65,19 +72,18 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Display the current date in the TextView.
+     * Menampilkan tanggal saat ini pada TextView.
      */
     private void displayCurrentDate() {
         if (dateTextView != null) {
-            String currentDate = getCurrentDate();
-            dateTextView.setText(currentDate);
+            dateTextView.setText(getCurrentDate());
         } else {
             Log.e(TAG, "dateTextView is null");
         }
     }
 
     /**
-     * Get the current date formatted as "dd/MM/yyyy".
+     * Mengembalikan tanggal saat ini dengan format "dd/MM/yyyy".
      */
     private String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -85,7 +91,7 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Perform logout if the user is not logged in.
+     * Melakukan logout dan mengarahkan pengguna ke SignInActivity.
      */
     private void performLogout() {
         clearLoginStatus();
@@ -93,19 +99,19 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Clear login status in SharedPreferences.
+     * Menghapus status login dari SharedPreferences.
      */
     private void clearLoginStatus() {
         SharedPreferences.Editor editor = requireActivity()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit();
-        editor.remove("username");  // Clear only the session-related data
-        editor.putBoolean("isLoggedIn", false);
+        editor.remove(KEY_USERNAME);
+        editor.putBoolean(KEY_IS_LOGGED_IN, false);
         editor.apply();
     }
 
     /**
-     * Redirect to the SignInActivity.
+     * Mengarahkan pengguna ke SignInActivity.
      */
     private void redirectToSignInActivity() {
         Intent intent = new Intent(requireContext(), SignInActivity.class);
@@ -118,17 +124,27 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        // Check if the user is logged in
+        // Cek status login pengguna
         if (!isUserLoggedIn()) {
-            performLogout(); // Logout and redirect if not logged in
+            performLogout();
         }
     }
 
+    private void setupImageSlider(View view) {
+        ImageSlider imageSlider = view.findViewById(R.id.imageSlider);
+        ArrayList<SlideModel> slideModels = new ArrayList<>();
+        slideModels.add(new SlideModel(R.drawable.welcome, ScaleTypes.FIT));
+        slideModels.add(new SlideModel(R.drawable.welcome1, ScaleTypes.FIT));
+        slideModels.add(new SlideModel(R.drawable.welcome2, ScaleTypes.FIT));
+        slideModels.add(new SlideModel(R.drawable.welcome3, ScaleTypes.FIT));
+        imageSlider.setImageList(slideModels, ScaleTypes.FIT);
+    }
+
     /**
-     * Check if the user is logged in by checking the SharedPreferences.
+     * Mengecek apakah pengguna telah login.
      */
     private boolean isUserLoggedIn() {
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getBoolean("isLoggedIn", false);
+        return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }
 }

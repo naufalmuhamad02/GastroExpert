@@ -4,6 +4,7 @@ annotation = "1.9.1"
 compilerVersion = "4.12.0"
 firebaseBom = "33.10.0"
 glide = "4.16.0"
+imageslideshow = "0.1.0"
 jbcrypt = "0.3m"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -25,6 +26,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compilerVersion" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
+imageslideshow = { module = "com.github.denzcoskun:ImageSlideshow", version.ref = "imageslideshow" }
 jbcrypt = { module = "org.mindrot:jbcrypt", version.ref = "jbcrypt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
